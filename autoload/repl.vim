@@ -12,7 +12,7 @@ let g:repl_autoloaded = 1
 
 function repl#OpenTerminal()
     belowright split | terminal
-    resize 10
+    exec 'resize ' . string(&lines - &lines / 1.618)
     let g:test_job_id = b:terminal_job_id
     wincmd k
 endfunction
@@ -53,4 +53,5 @@ function repl#GetInDelimeter()
     " returns a string separated by new line characters
     return join(cell, "\n") . "\n"
 endfunction
+
 
