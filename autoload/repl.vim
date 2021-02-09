@@ -50,8 +50,23 @@ function repl#GetInDelimeter()
     if cell[-1][0] == " "
         let cell = cell + [" "]
     endif
+
+
+    return cell + ["\n"]
+
+
     " returns a string separated by new line characters
-    return join(cell, "\n") . "\n"
+    "return join(cell, "\n") . "\n"
 endfunction
 
-
+function! repl#GetVisualSelection() range
+    let reg_save = getreg('"')
+    let regtype_save = getregtype('"')
+    let cb_save = &clipboard
+    set clipboard&
+    normal! ""gvy
+    let selection = getreg('"')
+    call setreg('"', reg_save, regtype_save)
+    let &clipboard = cb_save
+    return selection
+endfunction 
