@@ -6,7 +6,8 @@ let g:repl_loaded = 1
 
 
 nnoremap <leader>tp :call repl#StartREPL()<CR>
-nnoremap <c-c><c-d> :call repl#SendStuffToTerminal(g:test_job_id, repl#GetInDelimeter())<CR>
+nnoremap <leader>sd :call repl#SendStuffToTerminal(g:test_job_id, repl#GetInDelimeter())<CR>
+nnoremap <leader>sf :call repl#SendStuffToTerminal(g:test_job_id, '%run ' . expand('%') . "\n")<CR>
 vnoremap <c-c><c-c> :call repl#SendStuffToTerminal(g:test_job_id, repl#GetVisualSelection())<CR>
 
 command! StartREPL call repl#StartREPL()
