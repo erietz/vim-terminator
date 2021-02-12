@@ -42,12 +42,16 @@ function repl#GetInDelimeter()
     call setpos('.', save_pos)
     " cell is a list of all the lines between the delimeters
     "let cell = nvim_buf_get_lines(0, last_delim + 1, next_delim - 1, v:false)
+    if next_delim == line('$')
+        let cell = getbufline(bufnr('%'), last_delim + 1, next_delim)
+    endif
     let cell = getbufline(bufnr('%'), last_delim + 1, next_delim - 1)
     " remove all of the blank lines to not clog up the repl feed as much
     let cell = filter(cell, '!empty(v:val)')
     " if last line is indented, add a new line so the repl enters text
     " correctly 
     if cell[-1][0] == " "
+    " TODO: this breaks when cursor is on last line of buffer
         let cell = cell + [" "]
     endif
 
