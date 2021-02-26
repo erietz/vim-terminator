@@ -15,16 +15,8 @@ individually
 - Both the commands used to run the current file and start a REPL for the current
 file are modifiable by a global dictionary defined in the `init.vim` or `vimrc`.
 
-The REPL command dictionary is defined like this.
-
-```vim
-let g:REPL_command = {
-  \'python' : ['ipython', '--no-autoindent'],
-  \'javascript': ['node'],
-  \}
-````
-
-The file running dictionary is defined like this.
+The file running dictionary is defined like this and comes out of the box
+with support for 50 languages.
 
 ```vim
 let g:terminator_runfile_map = {
@@ -35,12 +27,25 @@ let g:terminator_runfile_map = {
 ```
 allowing use of the variables defined below
 
+
 | variable name            | description                                                                |
 | ---                      | ---                                                                        |
 | $fileName                | what you would get from running  `basename` on the file                    |
 | $fileNameWithoutExt      | same as $fileName with everything after and including the last `.` removed |
 | $dir                     | the full path of the parent directory of the filename                      |
 | $dirWithoutTrailingSlash | same as $dir with the trailing slash removed                               |
+
+
+
+The REPL command dictionary is defined like this.
+
+```vim
+let g:REPL_command = {
+  \'python' : ['ipython', '--no-autoindent'],
+  \'javascript': ['node'],
+  \}
+````
+
 
 # Installation
 
