@@ -2,7 +2,7 @@
 
 This plugin can do a few thing.
 
-1. Run your current file in neovim terminal using automatic file type detection 
+1. Run your current file in a neovim terminal using automatic file type detection 
 2. Start a REPL using automatic file type detection
 3. Send selected text and text between commented delimiters to a REPL (or terminal)
   - Currently only optimized for python
@@ -49,3 +49,11 @@ Using `vim-plug`
 ```vim
 plug 'erietz/vim-terminator'
 ```
+
+# Usage
+
+- `<leader>ot`: Open a new blank terminal so the plugin can send command to it
+  - This will reopen a terminal if one has already been opened and the buffer
+  has not been deleted.
+- `<leader>or`: Opens a repl in the open terminal
+- `<leader>rf`: Runs your current file in the open terminal 
