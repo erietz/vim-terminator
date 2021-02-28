@@ -8,7 +8,7 @@ endif
 
 let g:terminator_autoloaded = 1
 
-let s:REPL_command = {
+let s:terminator_repl_command = {
   \'python' : ['ipython', '--no-autoindent'],
   \'javascript': ['node'],
   \}
@@ -66,8 +66,8 @@ let s:terminator_runfile_map = {
             \ "fortran": "cd $dir && gfortran $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt"
             \}
 
-if exists("g:REPL_command")
-    let s:REPL_command = extend(s:REPL_command, g:REPL_command)
+if exists("g:terminator_repl_command")
+    let s:terminator_repl_command = extend(s:terminator_repl_command, g:terminator_repl_command)
 endif
 
 if exists("g:terminator_runfile_map")
@@ -98,7 +98,7 @@ function terminator#send_to_terminal(contents)
 endfunction
 
 function terminator#get_command()
-    let cmd = get(s:REPL_command, &ft, 'language_not_found')
+    let cmd = get(s:terminator_repl_command, &ft, 'language_not_found')
     return cmd
 endfunction
 
