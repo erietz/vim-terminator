@@ -257,6 +257,7 @@ endfunction
 
 function! terminator#run_file_in_output_buffer(cmd)
     cexpr ''
+    cwindow
     "let cmd = get(s:terminator_runfile_map, &ft, '')
     "let full_cmd = a:cmd . ' ' . expand("%:p")
     let full_cmd = a:cmd
