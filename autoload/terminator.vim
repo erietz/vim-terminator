@@ -74,7 +74,6 @@ if exists("g:terminator_runfile_map")
     let s:terminator_runfile_map = extend(s:terminator_runfile_map, g:terminator_runfile_map)
 endif
 
-
 function terminator#open_terminal()
     if exists("g:terminator_buffer_number")
         let buffer_name = bufname(g:terminator_buffer_number)
