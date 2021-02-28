@@ -11,8 +11,16 @@ vnoremap <c-c><c-c> :call terminator#send_to_terminal(terminator#get_visual_sele
 command! OpenTerminal call terminator#open_terminal()
 command! StartREPL call terminator#StartREPL()
 command! -nargs=+ SendStuffToTerminal call terminator#send_to_terminal(<q-args> . "\n")
-command! RunFileInTerminal call terminator#run_file_in_terminal()
+command! RunFileInTerminal call terminator#run_current_file("terminal")
+command! RunFileInOutputBuffer call terminator#run_current_file("output_buffer")
 
 nnoremap <leader>ot :OpenTerminal <CR>
 nnoremap <leader>or :StartREPL <CR>
 nnoremap <leader>rf :RunFileInTerminal <CR>
+nnoremap <leader>rr :RunFileInOutputBuffer <CR>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Run plugin merge
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+command! RunStop call terminator#run_stop_job()

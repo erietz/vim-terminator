@@ -154,7 +154,7 @@ function! terminator#get_visual_selection() range
     return selection
 endfunction 
 
-function terminator#run_file_in_terminal()
+function terminator#run_current_file(output_location)
     let dir = expand("%:p:h") . "/"
     let fileName = expand("%:t")
     let fileNameWithoutExt = expand("%:t:r")
@@ -173,5 +173,98 @@ function terminator#run_file_in_terminal()
         let cmd = cmd . ' ' . expand("%:p")
     endif
 
-    call terminator#send_to_terminal(cmd . "\n")
+    if a:output_location == "terminal"
+        call terminator#send_to_terminal(cmd . "\n")
+    elseif a:output_location == "output_buffer"
+        call terminator#run_file_in_output_buffer(cmd)
+    else
+        echo "invalid option for this function"
+    end
 endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Run plugin merge
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+function terminator#on_event(job_id, data, event) dict
+    "let output_string = join(a:data)
+    if a:event == 'stdout'
+        " TODO: data arrives in inconsistant order and results in
+        " string new line issues
+        " see Note 2 of :h job-control
+        let s:chunks = ['']
+        let s:chunks[-1] .= a:data[0]
+        call extend(s:chunks, a:data[1:])
+        "if s:chunks[0] == ''
+        "    call remove(s:chunks, 0)
+        "elseif s:chunks[-1] == ''
+        "    call remove(s:chunks, -1)
+        "endif
+        call filter(s:chunks, '!empty(v:val)')
+        let the_data = s:chunks
+        "let the_data = join(a:data)
+        let str = the_data
+        "echomsg str
+    elseif a:event == 'stderr'
+        let the_data = join(a:data)
+        caddexpr a:data
+        cwindow
+        if the_data == '' | return | endif
+        call appendbufline(self.win_num, '$', '')
+        let str = 'stderr: check the quickfix window for errors'
+    else
+        "let str = 'exited ' . a:data
+        let finished_time = localtime()
+        let run_time = finished_time - self.start_time
+        let str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
+        cwindow
+    endif
+    call appendbufline(self.win_num, '$', str)
+endfunction
+
+let s:callbacks = {
+\ 'on_stdout': function('terminator#on_event'),
+\ 'on_stderr': function('terminator#on_event'),
+\ 'on_exit': function('terminator#on_event')
+\ }
+
+function terminator#get_output_buffer(cmd)
+    let first_line = '[Running] ' . a:cmd
+    let error_format = &errorformat
+
+    let buf_num = bufnr('_OUTPUT_BUFFER_')
+    if buf_num == -1
+        keepalt belowright split _OUTPUT_BUFFER_
+        exec 'resize ' . string(&lines - &lines / 1.618)
+        setlocal filetype=run_output buftype=nofile noswapfile nowrap cursorline modifiable nospell
+        let &errorformat=error_format
+        let buf_num = bufnr('%')
+        call setline(1, first_line)
+        wincmd p
+    else
+        let buffer_name = bufname(buf_num)
+        "execute("belowright split " . buffer_name)
+        "exec 'resize ' . string(&lines - &lines / 1.618)
+        call deletebufline(buffer_name, 1, '$')
+        "call appendbufline(buffer_name, 1, first_line)
+        call setbufline(buffer_name, 1, first_line)
+        "wincmd p
+    endif
+
+    return buf_num
+endfunction
+
+function! terminator#run_file_in_output_buffer(cmd)
+    cexpr ''
+    "let cmd = get(s:terminator_runfile_map, &ft, '')
+    "let full_cmd = a:cmd . ' ' . expand("%:p")
+    let full_cmd = a:cmd
+    let win_num = terminator#get_output_buffer(full_cmd)
+    let start_time = localtime()
+    let g:run_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time}, s:callbacks))
+endfunction
+
+function terminator#run_stop_job()
+    call jobstop(g:run_running_job)
+endfunction
+
