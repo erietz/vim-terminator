@@ -98,7 +98,7 @@ function terminator#send_to_terminal(contents)
 endfunction
 
 function terminator#get_command()
-    let cmd = get(s:REPL_command, &ft, '')
+    let cmd = get(s:REPL_command, &ft, 'language_not_found')
     return cmd
 endfunction
 
@@ -160,7 +160,8 @@ function terminator#run_current_file(output_location)
     let fileNameWithoutExt = expand("%:t:r")
     let dirWithoutTrailingSlash = expand("%:h")
 
-    let cmd = get(s:terminator_runfile_map, &ft, '')
+    let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
+    if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
     if stridx(cmd, "fileName") == -1
         let needs_filename_at_end = 1
     endif
@@ -236,7 +237,7 @@ function terminator#get_output_buffer(cmd)
     if buf_num == -1
         keepalt belowright split _OUTPUT_BUFFER_
         exec 'resize ' . string(&lines - &lines / 1.618)
-        setlocal filetype=run_output buftype=nofile noswapfile nowrap cursorline modifiable nospell
+        setlocal filetype=output_buffer buftype=nofile noswapfile nowrap cursorline modifiable nospell
         let &errorformat=error_format
         let buf_num = bufnr('%')
         call setline(1, first_line)
