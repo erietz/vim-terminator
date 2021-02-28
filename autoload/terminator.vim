@@ -4,10 +4,10 @@ endif
 let g:terminator_autoloaded = 1
 
 "TODO: add options for different split locations
-"TODO: add safety featur to sendstufftoterminal so it only send if its the
+"TODO: add safety featur to send_to_terminal so it only send if its the
 "right terminal and the terminator is open
 
-function terminator#OpenTerminal()
+function terminator#open_terminal()
     if exists("g:terminator_buffer_number")
         let buffer_name = bufname(g:terminator_buffer_number)
         execute("belowright split " . buffer_name )
@@ -22,7 +22,7 @@ function terminator#OpenTerminal()
     endif
 endfunction
 
-function terminator#SendStuffToTerminal(contents)
+function terminator#send_to_terminal(contents)
     if !(exists("g:terminator_job_id")) 
         echo "Please open a terminal before running this command"
     else
@@ -44,18 +44,18 @@ if exists("g:terminator_runfile_map")
 endif
 
 
-function terminator#GetCommand()
+function terminator#get_command()
     let cmd = get(s:REPL_command, &ft, '')
     return cmd
 endfunction
 
-function terminator#StartREPL()
-    call terminator#OpenTerminal()
-    let cmd = terminator#GetCommand()
-    call terminator#SendStuffToTerminal(join(cmd, ' ') . "\n")
+function terminator#start_repl()
+    call terminator#open_terminal()
+    let cmd = terminator#get_command()
+    call terminator#send_to_terminal(join(cmd, ' ') . "\n")
 endfunction
 
-function terminator#GetInDelimeter()
+function terminator#get_in_delimiter()
     " TODO: pass in the delimeter as an argument so different delimeters can
     " be used
 
@@ -92,7 +92,7 @@ function terminator#GetInDelimeter()
     "return join(cell, "\n") . "\n"
 endfunction
 
-function! terminator#GetVisualSelection() range
+function! terminator#get_visual_selection() range
     let reg_save = getreg('"')
     let regtype_save = getregtype('"')
     let cb_save = &clipboard
@@ -104,7 +104,7 @@ function! terminator#GetVisualSelection() range
     return selection
 endfunction 
 
-function terminator#RunFileInTerminal()
+function terminator#run_file_in_terminal()
 
     let dir = expand("%:p:h") . "/"
     let fileName = expand("%:t")
@@ -127,7 +127,7 @@ function terminator#RunFileInTerminal()
         let cmd = cmd . ' ' . expand("%:p")
     endif
 
-    call terminator#SendStuffToTerminal(cmd . "\n")
+    call terminator#send_to_terminal(cmd . "\n")
 endfunction
 
 let s:terminator_runfile_map = {
