@@ -215,8 +215,8 @@ function terminator#on_event(job_id, data, event) dict
         let str = 'stderr: check the quickfix window for errors'
     else
         "let str = 'exited ' . a:data
-        let finished_time = localtime()
-        let run_time = finished_time - self.start_time
+        "let finished_time = reltime()
+        let run_time = split(reltimestr(reltime(self.start_time)))[0]
         let str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
         cwindow
     endif
@@ -246,7 +246,7 @@ function terminator#get_output_buffer(cmd)
         let buffer_name = bufname(buf_num)
         "execute("belowright split " . buffer_name)
         "exec 'resize ' . string(&lines - &lines / 1.618)
-        call deletebufline(buffer_name, 1, '$')
+        silent call deletebufline(buffer_name, 1, '$')
         "call appendbufline(buffer_name, 1, first_line)
         call setbufline(buffer_name, 1, first_line)
         "wincmd p
@@ -262,7 +262,7 @@ function! terminator#run_file_in_output_buffer(cmd)
     "let full_cmd = a:cmd . ' ' . expand("%:p")
     let full_cmd = a:cmd
     let win_num = terminator#get_output_buffer(full_cmd)
-    let start_time = localtime()
+    let start_time = reltime()
     let g:run_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time}, s:callbacks))
 endfunction
 
