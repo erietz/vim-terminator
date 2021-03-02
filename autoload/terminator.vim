@@ -77,7 +77,8 @@ if exists("g:terminator_runfile_map")
 endif
 
 function terminator#open_terminal()
-    if exists("g:terminator_buffer_number")
+    if exists("g:terminator_buffer_number") && bufname(g:terminator_buffer_number) =~# '^term://'
+        echomsg "regex match is positive"
         let buffer_name = bufname(g:terminator_buffer_number)
         execute("belowright split " . buffer_name )
         exec 'resize ' . string(&lines - &lines / 1.618)
@@ -93,6 +94,9 @@ endfunction
 
 function terminator#send_to_terminal(contents)
     if !(exists("g:terminator_job_id")) 
+        echo "Your terminal is opening ...... you may have to run this again if it opens too slowly"
+        call terminator#open_terminal()
+    elseif bufname(g:terminator_buffer_number) !~# '^term://'
         echo "Your terminal is opening ...... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
     else
