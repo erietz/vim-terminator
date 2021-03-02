@@ -13,6 +13,8 @@ let s:terminator_repl_command = {
   \'javascript': ['node'],
   \}
 
+" this dictionary was extracted out of json from the vscode extension
+" code-runner and modified 
 let s:terminator_runfile_map = {
             \ "javascript": "node",
             \ "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
@@ -111,35 +113,21 @@ endfunction
 function terminator#get_in_delimiter()
     " TODO: pass in the delimeter as an argument so different delimeters can
     " be used
-
-    " save original cursor position cuz search command moves cursor
     let save_pos = getpos(".")
-    " get line number of delimeter before cursor
     let last_delim = search('# In\[.*\]:', 'b')
-    " return cursor to original position
     call setpos('.', save_pos)
-    " get line number of delimeter after cursor (or end of file)
     let next_delim = search('\(# In\[.*\]:\|\%$\)')
-    " return cursor to original position
     call setpos('.', save_pos)
-    " cell is a list of all the lines between the delimeters
-    "let cell = nvim_buf_get_lines(0, last_delim + 1, next_delim - 1, v:false)
     if next_delim == line('$')
         let cell = getbufline(bufnr('%'), last_delim + 1, next_delim)
     endif
     let cell = getbufline(bufnr('%'), last_delim + 1, next_delim - 1)
-    " remove all of the blank lines to not clog up the terminator feed as much
-    let cell = filter(cell, '!empty(v:val)')
-    " if last line is indented, add a new line so the terminator enters text
-    " correctly 
+    let cell = terminator#remove_empty_strings(cell)
     if cell[-1][0] == " "
     " TODO: this breaks when cursor is on last line of buffer
         let cell = cell + [" "]
     endif
-
     return cell + ["\n"]
-    " returns a string separated by new line characters
-    "return join(cell, "\n") . "\n"
 endfunction
 
 function! terminator#get_visual_selection() range
@@ -183,44 +171,73 @@ function terminator#run_current_file(output_location)
     end
 endfunction
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"-------------------------------------------------------------------------------
 " Run plugin merge
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"-------------------------------------------------------------------------------
+"
+function terminator#remove_empty_strings(list)
+    return filter(a:list, '!empty(v:val)')
+endfunction
+
+function terminator#splice_lists_together(list1, list2)
+    let l:tmp1 = copy(a:list1)
+    let l:tmp2 = copy(a:list2)
+    let l:tmp1[-1] = trim(l:tmp1[-1], ' ')
+    let l:tmp2[0] = trim(l:tmp2[0], ' ')
+    let l:dummy = extend(l:tmp1, l:tmp2)
+    let l:dummy = [join(l:dummy)]
+    return l:dummy
+endfunction
 
 function terminator#on_event(job_id, data, event) dict
     "let output_string = join(a:data)
     if a:event == 'stdout'
+
+        if !empty(a:data[-1])
+            call add(self.str_buffer, join(a:data))
+        elseif !empty(self.str_buffer)"
+            let tmp = deepcopy(a:data)
+            let l:chunks = terminator#splice_lists_together(self.str_buffer, tmp)
+            let self.str_buffer = []
+        else
+            let l:chunks = a:data
+        endif
+
         " TODO: data arrives in inconsistant order and results in
         " string new line issues
         " see Note 2 of :h job-control
-        let s:chunks = ['']
-        let s:chunks[-1] .= a:data[0]
-        call extend(s:chunks, a:data[1:])
+        "
+        "let s:chunks = ['']
+        "let s:chunks[-1] .= a:data[0]
+        "call extend(s:chunks, a:data[1:])
+
         "if s:chunks[0] == ''
         "    call remove(s:chunks, 0)
         "elseif s:chunks[-1] == ''
         "    call remove(s:chunks, -1)
         "endif
-        call filter(s:chunks, '!empty(v:val)')
-        let the_data = s:chunks
-        "let the_data = join(a:data)
-        let str = the_data
-        "echomsg str
+
+        if exists("l:chunks")
+            call terminator#remove_empty_strings(l:chunks)
+            let l:str = deepcopy(l:chunks)
+        endif
     elseif a:event == 'stderr'
         let the_data = join(a:data)
         caddexpr a:data
         cwindow
         if the_data == '' | return | endif
         call appendbufline(self.win_num, '$', '')
-        let str = 'stderr: check the quickfix window for errors'
+        let l:str = 'stderr: check the quickfix window for errors'
     else
         "let str = 'exited ' . a:data
         "let finished_time = reltime()
         let run_time = split(reltimestr(reltime(self.start_time)))[0]
-        let str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
+        let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
         cwindow
     endif
-    call appendbufline(self.win_num, '$', str)
+    if exists("l:str")
+        call appendbufline(self.win_num, '$', l:str)
+    endif
 endfunction
 
 let s:callbacks = {
@@ -263,7 +280,7 @@ function! terminator#run_file_in_output_buffer(cmd)
     let full_cmd = a:cmd
     let win_num = terminator#get_output_buffer(full_cmd)
     let start_time = reltime()
-    let g:run_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time}, s:callbacks))
+    let g:run_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time, 'str_buffer': []}, s:callbacks))
 endfunction
 
 function terminator#run_stop_job()
