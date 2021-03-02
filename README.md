@@ -1,11 +1,23 @@
 # About
 
-This plugin can do a few thing.
+This plugin can do several thing.
 
-1. Run your current file in a neovim terminal using automatic file type detection 
-2. Start a REPL using automatic file type detection
-3. Send selected text and text between commented delimiters to a REPL (or terminal)
-  - Currently only optimized for python
+1. Run your current file in a "output buffer" using automatic file type detection 
+  - The command is executed asynchronously leaving your editor fully usable
+  - The process is timed and reported in seconds to 6 decimal places at the end
+  of the running job
+  - The "output buffer" is a scratch vim buffer with custom syntax highlighting
+2. Run your current file in a neovim terminal using automatic file type detection 
+3. Start a REPL using automatic file type detection
+4. Send selected text and text between commented delimiters to a REPL (or terminal)
+
+# Demo
+
+![Run current file in output buffer](./media/run_in_output_buffer.gif "Run file in the output buffer")
+
+![Run current file in a neovim terminal](./media/run_in_terminal.gif "Run file in the terminal")
+
+![Send text in delimeter to a new REPL](./media/send_to_repl.gif "Sending text to REPL")
 
 # Extensibility
 
@@ -61,4 +73,5 @@ plug 'erietz/vim-terminator'
   - This will reopen a terminal if one has already been opened and the buffer
   has not been deleted.
 - `<leader>or`: Opens a repl in the open terminal
-- `<leader>rf`: Runs your current file in the open terminal 
+- `<leader>rf`: Runs your current file in the open terminal
+- `<leader>rr`: Runs your current file in the scratch buffer

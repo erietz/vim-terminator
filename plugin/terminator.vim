@@ -9,7 +9,7 @@ nnoremap <leader>sf :call terminator#send_to_terminal('%run ' . expand('%') . "\
 vnoremap <c-c><c-c> :call terminator#send_to_terminal(terminator#get_visual_selection())<CR>
 
 command! OpenTerminal call terminator#open_terminal()
-command! StartREPL call terminator#StartREPL()
+command! StartREPL call terminator#start_repl()
 command! -nargs=+ SendStuffToTerminal call terminator#send_to_terminal(<q-args> . "\n")
 command! RunFileInTerminal call terminator#run_current_file("terminal")
 command! RunFileInOutputBuffer call terminator#run_current_file("output_buffer")
