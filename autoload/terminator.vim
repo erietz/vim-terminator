@@ -18,7 +18,7 @@ let s:terminator_repl_command = {
 let s:terminator_runfile_map = {
             \ "javascript": "node",
             \ "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
-            \ "c": "cd $dir && gcc $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
+            \ "c": "gcc $dir$fileName -o $dir$fileNameWithoutExt && $dir$fileNameWithoutExt",
             \ "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
             \ "objective-c": "cd $dir && gcc -framework Cocoa $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
             \ "php": "php",
