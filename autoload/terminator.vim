@@ -93,7 +93,8 @@ endfunction
 
 function terminator#send_to_terminal(contents)
     if !(exists("g:terminator_job_id")) 
-        echo "Please open a terminal before running this command"
+        echo "Your terminal is opening ...... you may have to run this again if it opens too slowly"
+        call terminator#open_terminal()
     else
         call chansend(g:terminator_job_id, a:contents)
     endif
@@ -185,7 +186,7 @@ function terminator#splice_lists_together(list1, list2)
     let l:tmp1[-1] = trim(l:tmp1[-1], ' ')
     let l:tmp2[0] = trim(l:tmp2[0], ' ')
     let l:dummy = extend(l:tmp1, l:tmp2)
-    let l:dummy = [join(l:dummy)]
+    let l:dummy = [trim(join(l:dummy), ' ')]
     return l:dummy
 endfunction
 
