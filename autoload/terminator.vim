@@ -1,6 +1,4 @@
 "TODO: add options for different split locations
-"TODO: add safety featur to send_to_terminal so it only send if its the
-"right terminal and the terminator is open
 
 if exists("g:terminator_autoloaded") || &cp
   finish
@@ -14,7 +12,7 @@ let s:terminator_repl_command = {
   \}
 
 " this dictionary was extracted out of json from the vscode extension
-" code-runner and modified 
+" code-runner and modified
 let s:terminator_runfile_map = {
             \ "javascript": "node",
             \ "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
@@ -78,7 +76,6 @@ endif
 
 function terminator#open_terminal()
     if exists("g:terminator_buffer_number") && bufname(g:terminator_buffer_number) =~# '^term://'
-        "echomsg "regex match is positive"
         let buffer_name = bufname(g:terminator_buffer_number)
         execute("belowright split " . buffer_name )
         exec 'resize ' . string(&lines - &lines / 1.618)
@@ -94,10 +91,10 @@ endfunction
 
 function terminator#send_to_terminal(contents)
     if !(exists("g:terminator_job_id")) 
-        echo "Your terminal is opening ...... you may have to run this again if it opens too slowly"
+        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
     elseif bufname(g:terminator_buffer_number) !~# '^term://'
-        echo "Your terminal is opening ...... you may have to run this again if it opens too slowly"
+        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
     else
         call chansend(g:terminator_job_id, a:contents)
@@ -124,7 +121,7 @@ function terminator#get_in_delimiter()
         let cell = getbufline(bufnr('%'), last_delim + 1, next_delim)
     endif
     let cell = getbufline(bufnr('%'), last_delim + 1, next_delim - 1)
-    let cell = terminator#remove_empty_strings(cell)
+    let cell = filter(cell, '!empty(v:val)')
     if cell[-1][0] == " "
     " TODO: this breaks when cursor is on last line of buffer
         let cell = cell + [" "]
@@ -157,46 +154,25 @@ function terminator#substitute_command_variables(command)
     return cmd
 endfunction
 
-function terminator#run_current_file(output_location)
-    let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
-    if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
-
-    let cmd = terminator#substitute_command_variables(cmd)
-
-    if stridx(cmd, "fileName") == -1
-        let needs_filename_at_end = 1
-    endif
-
-    if exists("needs_filename_at_end")
-        let cmd = cmd . ' ' . expand("%:p")
-    endif
-
-    if a:output_location == "terminal"
-        call terminator#send_to_terminal(cmd . "\n")
-    elseif a:output_location == "output_buffer"
-        call terminator#run_file_in_output_buffer(cmd)
+function terminator#get_output_buffer(cmd)
+    let first_line = '[Running] ' . a:cmd
+    let error_format = &errorformat
+    let buf_num = bufnr('_OUTPUT_BUFFER_')
+    if buf_num == -1
+        keepalt belowright split _OUTPUT_BUFFER_
+        exec 'resize ' . string(&lines - &lines / 1.618)
+        setlocal filetype=output_buffer buftype=nofile noswapfile nowrap cursorline modifiable nospell
+        let &errorformat=error_format
+        let buf_num = bufnr('%')
+        call setline(1, first_line)
+        wincmd p
     else
-        echo "invalid option for this function"
-    end
+        let buffer_name = bufname(buf_num)
+        silent call deletebufline(buffer_name, 1, '$')
+        call setbufline(buffer_name, 1, first_line)
+    endif
+    return buf_num
 endfunction
-
-"-------------------------------------------------------------------------------
-" Run plugin merge
-"-------------------------------------------------------------------------------
-"
-function terminator#remove_empty_strings(list)
-    return filter(a:list, '!empty(v:val)')
-endfunction
-
-" function terminator#splice_lists_together(list1, list2)
-"     let l:tmp1 = copy(a:list1)
-"     let l:tmp2 = copy(a:list2)
-"     let l:tmp1[-1] = trim(l:tmp1[-1], ' ')
-"     let l:tmp2[0] = trim(l:tmp2[0], ' ')
-"     let l:dummy = extend(l:tmp1, l:tmp2)
-"     let l:dummy = [trim(join(l:dummy), ' ')]
-"     return l:dummy
-" endfunction
 
 " The data that is outputted from the async command looks like this
 
@@ -230,10 +206,9 @@ function terminator#glue_lists_together(list1, list2)
 endfunction
 
 function terminator#on_event(job_id, data, event) dict
-    "let output_string = join(a:data)
     if a:event == 'stdout'
-        "echomsg a:data
-
+        "TODO: on slow computers (such as raspberry pi) multiple lines may
+        "print on one line
         if !empty(a:data[-1])
             call add(self.str_buffer, join(a:data))
         elseif !empty(self.str_buffer)
@@ -245,26 +220,11 @@ function terminator#on_event(job_id, data, event) dict
                 call remove(l:chunks, -1)
             endif
         endif
-
-        " TODO: data arrives in inconsistant order and results in
-        " string new line issues
-        " see Note 2 of :h job-control
-        "
-        "let s:chunks = ['']
-        "let s:chunks[-1] .= a:data[0]
-        "call extend(s:chunks, a:data[1:])
-
-        "if s:chunks[0] == ''
-        "    call remove(s:chunks, 0)
-        "elseif s:chunks[-1] == ''
-        "    call remove(s:chunks, -1)
-        "endif
-
         if exists("l:chunks")
-            "call terminator#remove_empty_strings(l:chunks)
-            let l:str = deepcopy(l:chunks)
+            let l:str = copy(l:chunks)
         endif
     elseif a:event == 'stderr'
+        "TODO: test if stderr needs buffered like stdout
         let the_data = join(a:data)
         caddexpr a:data
         cwindow
@@ -272,8 +232,6 @@ function terminator#on_event(job_id, data, event) dict
         call appendbufline(self.win_num, '$', '')
         let l:str = 'stderr: check the quickfix window for errors'
     else
-        "let str = 'exited ' . a:data
-        "let finished_time = reltime()
         let run_time = split(reltimestr(reltime(self.start_time)))[0]
         let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
         cwindow
@@ -289,44 +247,34 @@ let s:callbacks = {
 \ 'on_exit': function('terminator#on_event')
 \ }
 
-function terminator#get_output_buffer(cmd)
-    let first_line = '[Running] ' . a:cmd
-    let error_format = &errorformat
-
-    let buf_num = bufnr('_OUTPUT_BUFFER_')
-    if buf_num == -1
-        keepalt belowright split _OUTPUT_BUFFER_
-        exec 'resize ' . string(&lines - &lines / 1.618)
-        setlocal filetype=output_buffer buftype=nofile noswapfile nowrap cursorline modifiable nospell
-        let &errorformat=error_format
-        let buf_num = bufnr('%')
-        call setline(1, first_line)
-        wincmd p
-    else
-        let buffer_name = bufname(buf_num)
-        "execute("belowright split " . buffer_name)
-        "exec 'resize ' . string(&lines - &lines / 1.618)
-        silent call deletebufline(buffer_name, 1, '$')
-        "call appendbufline(buffer_name, 1, first_line)
-        call setbufline(buffer_name, 1, first_line)
-        "wincmd p
-    endif
-
-    return buf_num
-endfunction
-
 function! terminator#run_file_in_output_buffer(cmd)
     cexpr ''
     cwindow
-    "let cmd = get(s:terminator_runfile_map, &ft, '')
-    "let full_cmd = a:cmd . ' ' . expand("%:p")
     let full_cmd = a:cmd
     let win_num = terminator#get_output_buffer(full_cmd)
     let start_time = reltime()
-    let g:run_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time, 'str_buffer': []}, s:callbacks))
+    let g:terminator_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time, 'str_buffer': []}, s:callbacks))
+endfunction
+
+function terminator#run_current_file(output_location)
+    let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
+    if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
+    let cmd = terminator#substitute_command_variables(cmd)
+    if stridx(cmd, "fileName") == -1
+        let needs_filename_at_end = 1
+    endif
+    if exists("needs_filename_at_end")
+        let cmd = cmd . ' ' . expand("%:p")
+    endif
+    if a:output_location == "terminal"
+        call terminator#send_to_terminal(cmd . "\n")
+    elseif a:output_location == "output_buffer"
+        call terminator#run_file_in_output_buffer(cmd)
+    else
+        echo "invalid option for this function"
+    end
 endfunction
 
 function terminator#run_stop_job()
-    call jobstop(g:run_running_job)
+    call jobstop(g:terminator_running_job)
 endfunction
-
