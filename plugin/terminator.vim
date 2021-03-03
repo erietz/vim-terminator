@@ -13,13 +13,13 @@ command! TerminatorStopRun call terminator#run_stop_job()
 
 if exists("g:terminator_clear_default_mappings")
 else
-    nnoremap <leader>ot :TerminatorOpenTerminal <CR>
-    nnoremap <leader>or :TerminatorStartREPL <CR>
-    nnoremap <leader>rt :TerminatorRunFileInTerminal <CR>
-    nnoremap <leader>rf :TerminatorRunFileInOutputBuffer <CR>
-    nnoremap <leader>rs :TerminatorStopRun <CR>
+    nnoremap <silent> <leader>ot :TerminatorOpenTerminal <CR>
+    nnoremap <silent> <leader>or :TerminatorStartREPL <CR>
+    nnoremap <silent> <leader>rt :TerminatorRunFileInTerminal <CR>
+    nnoremap <silent> <leader>rf :TerminatorRunFileInOutputBuffer <CR>
+    nnoremap <silent> <leader>rs :TerminatorStopRun <CR>
 
-    nnoremap <leader>sd :call terminator#send_to_terminal(terminator#get_in_delimiter())<CR>
-    nnoremap <leader>sf :call terminator#send_to_terminal('%run ' . expand('%') . "\n")<CR>
-    vnoremap <leader>ss :call terminator#send_to_terminal(terminator#get_visual_selection())<CR>
+    nnoremap <silent> <leader>sd :call terminator#send_to_terminal(terminator#get_in_delimiter())<CR>
+    nnoremap <silent> <leader>sf :call terminator#send_to_terminal('%run ' . expand('%') . "\n")<CR>
+    vnoremap <silent> <leader>ss :call terminator#send_to_terminal(terminator#get_visual_selection())<CR>
 endif

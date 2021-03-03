@@ -4,8 +4,8 @@
 from time import sleep
 for i in range(10):
     print('hello world', i)
-    print()
-    #sleep(0.6)
+    #print()
+    sleep(0.1)
 
 # In[2]:
 
