@@ -184,28 +184,62 @@ function terminator#remove_empty_strings(list)
     return filter(a:list, '!empty(v:val)')
 endfunction
 
-function terminator#splice_lists_together(list1, list2)
-    let l:tmp1 = copy(a:list1)
-    let l:tmp2 = copy(a:list2)
-    let l:tmp1[-1] = trim(l:tmp1[-1], ' ')
-    let l:tmp2[0] = trim(l:tmp2[0], ' ')
-    let l:dummy = extend(l:tmp1, l:tmp2)
-    let l:dummy = [trim(join(l:dummy), ' ')]
-    return l:dummy
+" function terminator#splice_lists_together(list1, list2)
+"     let l:tmp1 = copy(a:list1)
+"     let l:tmp2 = copy(a:list2)
+"     let l:tmp1[-1] = trim(l:tmp1[-1], ' ')
+"     let l:tmp2[0] = trim(l:tmp2[0], ' ')
+"     let l:dummy = extend(l:tmp1, l:tmp2)
+"     let l:dummy = [trim(join(l:dummy), ' ')]
+"     return l:dummy
+" endfunction
+
+" The data that is outputted from the async command looks like this
+
+"['hello world 1', '']
+"['hello world 2', '']
+"['hello world 3']
+"['', '']
+"['hello world 4', '']
+"['hello world']
+"[' 5', '']
+"['hello world 6', '']
+
+" If the last item in the list is not an empty string, then the first item in
+" the next message needs to be joined with the last item from the previous
+" list
+
+function terminator#glue_lists_together(list1, list2)
+    let list1 = copy(a:list1)
+    let list2 = copy(a:list2)
+    if len(list1) > 1
+        let resin = remove(list1, -2)
+    else
+        let resin = remove(list1, 0)
+    endif
+    let hardener = remove(list2, 0)
+    let new_list = list1 + [resin . hardener] + list2
+    if empty(new_list[-1])
+        call remove(new_list, -1)
+    endif
+    return new_list
 endfunction
 
 function terminator#on_event(job_id, data, event) dict
     "let output_string = join(a:data)
     if a:event == 'stdout'
+        echomsg a:data
 
         if !empty(a:data[-1])
             call add(self.str_buffer, join(a:data))
-        elseif !empty(self.str_buffer)"
-            let tmp = deepcopy(a:data)
-            let l:chunks = terminator#splice_lists_together(self.str_buffer, tmp)
+        elseif !empty(self.str_buffer)
+            let l:chunks = terminator#glue_lists_together(self.str_buffer, a:data)
             let self.str_buffer = []
         else
             let l:chunks = a:data
+            if empty(l:chunks[-1])
+                call remove(l:chunks, -1)
+            endif
         endif
 
         " TODO: data arrives in inconsistant order and results in
@@ -223,7 +257,7 @@ function terminator#on_event(job_id, data, event) dict
         "endif
 
         if exists("l:chunks")
-            call terminator#remove_empty_strings(l:chunks)
+            "call terminator#remove_empty_strings(l:chunks)
             let l:str = deepcopy(l:chunks)
         endif
     elseif a:event == 'stderr'
