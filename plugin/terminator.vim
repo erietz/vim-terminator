@@ -4,23 +4,22 @@ endif
 
 let g:terminator_loaded = 1
 
-nnoremap <leader>sd :call terminator#send_to_terminal(terminator#get_in_delimiter())<CR>
-nnoremap <leader>sf :call terminator#send_to_terminal('%run ' . expand('%') . "\n")<CR>
-vnoremap <c-c><c-c> :call terminator#send_to_terminal(terminator#get_visual_selection())<CR>
+command! TerminatorOpenTerminal call terminator#open_terminal()
+command! TerminatorStartREPL call terminator#start_repl()
+command! -nargs=+ TerminatorSendToTerminal call terminator#send_to_terminal(<q-args> . "\n")
+command! TerminatorRunFileInTerminal call terminator#run_current_file("terminal")
+command! TerminatorRunFileInOutputBuffer call terminator#run_current_file("output_buffer")
+command! TerminatorStopRun call terminator#run_stop_job()
 
-command! OpenTerminal call terminator#open_terminal()
-command! StartREPL call terminator#start_repl()
-command! -nargs=+ SendStuffToTerminal call terminator#send_to_terminal(<q-args> . "\n")
-command! RunFileInTerminal call terminator#run_current_file("terminal")
-command! RunFileInOutputBuffer call terminator#run_current_file("output_buffer")
+if exists("g:terminator_clear_default_mappings")
+else
+    nnoremap <leader>ot :TerminatorOpenTerminal <CR>
+    nnoremap <leader>or :TerminatorStartREPL <CR>
+    nnoremap <leader>rt :TerminatorRunFileInTerminal <CR>
+    nnoremap <leader>rf :TerminatorRunFileInOutputBuffer <CR>
+    nnoremap <leader>rs :TerminatorStopRun <CR>
 
-nnoremap <leader>ot :OpenTerminal <CR>
-nnoremap <leader>or :StartREPL <CR>
-nnoremap <leader>rf :RunFileInTerminal <CR>
-nnoremap <leader>rr :RunFileInOutputBuffer <CR>
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Run plugin merge
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-command! RunStop call terminator#run_stop_job()
+    nnoremap <leader>sd :call terminator#send_to_terminal(terminator#get_in_delimiter())<CR>
+    nnoremap <leader>sf :call terminator#send_to_terminal('%run ' . expand('%') . "\n")<CR>
+    vnoremap <leader>ss :call terminator#send_to_terminal(terminator#get_visual_selection())<CR>
+endif
