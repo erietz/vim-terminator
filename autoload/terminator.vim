@@ -193,24 +193,22 @@ function terminator#glue_lists_together(list1, list2)
     let list1 = copy(a:list1)
     let list2 = copy(a:list2)
     if len(list1) > 1
-        let resin = remove(list1, -2)
+        let resin = remove(list1, -1)
     else
         let resin = remove(list1, 0)
     endif
     let hardener = remove(list2, 0)
     let new_list = list1 + [resin . hardener] + list2
-    if empty(new_list[-1])
-        call remove(new_list, -1)
-    endif
     return new_list
 endfunction
 
 function terminator#on_event(job_id, data, event) dict
     if a:event == 'stdout'
+        "echomsg a:data
         "TODO: on slow computers (such as raspberry pi) multiple lines may
         "print on one line
         if !empty(a:data[-1])
-            call add(self.str_buffer, join(a:data))
+            call extend(self.str_buffer, a:data)
         elseif !empty(self.str_buffer)
             let l:chunks = terminator#glue_lists_together(self.str_buffer, a:data)
             let self.str_buffer = []
