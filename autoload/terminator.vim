@@ -78,7 +78,7 @@ endif
 
 function terminator#open_terminal()
     if exists("g:terminator_buffer_number") && bufname(g:terminator_buffer_number) =~# '^term://'
-        echomsg "regex match is positive"
+        "echomsg "regex match is positive"
         let buffer_name = bufname(g:terminator_buffer_number)
         execute("belowright split " . buffer_name )
         exec 'resize ' . string(&lines - &lines / 1.618)
@@ -228,7 +228,7 @@ endfunction
 function terminator#on_event(job_id, data, event) dict
     "let output_string = join(a:data)
     if a:event == 'stdout'
-        echomsg a:data
+        "echomsg a:data
 
         if !empty(a:data[-1])
             call add(self.str_buffer, join(a:data))
