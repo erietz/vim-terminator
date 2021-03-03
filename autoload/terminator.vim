@@ -9,8 +9,8 @@ endif
 let g:terminator_autoloaded = 1
 
 let s:terminator_repl_command = {
-  \'python' : ['ipython', '--no-autoindent'],
-  \'javascript': ['node'],
+  \'python' : 'ipython --no-autoindent',
+  \'javascript': 'node',
   \}
 
 " this dictionary was extracted out of json from the vscode extension
@@ -104,15 +104,12 @@ function terminator#send_to_terminal(contents)
     endif
 endfunction
 
-function terminator#get_command()
-    let cmd = get(s:terminator_repl_command, &ft, 'language_not_found')
-    return cmd
-endfunction
-
 function terminator#start_repl()
+    let cmd = get(s:terminator_repl_command, &ft, 'language_not_found')
+    if cmd == 'language_not_found' | echo 'language not in repl dictionary' | return | endif
     call terminator#open_terminal()
-    let cmd = terminator#get_command()
-    call terminator#send_to_terminal(join(cmd, ' ') . "\n")
+    let cmd = terminator#substitute_command_variables(cmd)
+    call terminator#send_to_terminal(cmd . "\n")
 endfunction
 
 function terminator#get_in_delimiter()
@@ -147,21 +144,28 @@ function! terminator#get_visual_selection() range
     return selection
 endfunction 
 
-function terminator#run_current_file(output_location)
+function terminator#substitute_command_variables(command)
+    let cmd = a:command
     let dir = expand("%:p:h") . "/"
     let fileName = expand("%:t")
     let fileNameWithoutExt = expand("%:t:r")
     let dirWithoutTrailingSlash = expand("%:h")
-
-    let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
-    if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
-    if stridx(cmd, "fileName") == -1
-        let needs_filename_at_end = 1
-    endif
     let cmd = substitute(cmd, "\$dir", dir, "g")
     let cmd = substitute(cmd, "\$fileName ", fileName . " ", "g")
     let cmd = substitute(cmd, "\$fileNameWithoutExt", fileNameWithoutExt, "g")
     let cmd = substitute(cmd, "\$dirWithoutTrailingSlash", dirWithoutTrailingSlash, "g")
+    return cmd
+endfunction
+
+function terminator#run_current_file(output_location)
+    let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
+    if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
+
+    let cmd = terminator#substitute_command_variables(cmd)
+
+    if stridx(cmd, "fileName") == -1
+        let needs_filename_at_end = 1
+    endif
 
     if exists("needs_filename_at_end")
         let cmd = cmd . ' ' . expand("%:p")
