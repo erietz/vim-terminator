@@ -199,6 +199,9 @@ function terminator#glue_lists_together(list1, list2)
     endif
     let hardener = remove(list2, 0)
     let new_list = list1 + [resin . hardener] + list2
+    if new_list[-1] == ''
+        call remove(new_list, -1)
+    endif
     return new_list
 endfunction
 
