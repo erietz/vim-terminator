@@ -289,14 +289,7 @@ function terminator#run_stop_job()
 endfunction
 
 function terminator#run_part_of_file(output_location, register) abort
-    "let file_type = &ft
     let l:tmpfile = tempname() . "." . expand("%:e")
-    "silent edit tmpfile
     call writefile(split(a:register, '\n'), fnameescape(l:tmpfile))
-    "let &filetype=file_type
-    "silent call deletebufline(expand("%"), 1, '$')
-    "call append(0, a:text)
-    "silent write
     call terminator#run_file(a:output_location, fnameescape(l:tmpfile))
-    "edit #
 endfunction
