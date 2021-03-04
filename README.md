@@ -84,14 +84,14 @@ plug 'erietz/vim-terminator'
 
 # Usage
 
-| Key map                                     | Description                                       |
-| ---                                         | ---                                               |
-| `<leader>ot`                                | Opens (or reopens) a terminal window              |
-| `<leader>or`                                | Opens a repl                                      |
-| `<leader>rf`                                | Runs your current file in the output buffer       |
-| `<leader>rt`                                | Runs your current file in the terminal            |
-| `<leader>sd`                                | Send text in delimeter to terminal                |
-| `<leader>ss`                                | Sends visual selection to terminal                |
-| `<leader>sf`                                | Runs your entire file in a REPL (only for python) |
-| `:TerminatorSendToTerminal echo "hi there"` | Sends `echo "hi there"` to the terminal           |
+| Key map                                     | Description                                                       |
+| ---                                         | ---                                                               |
+| `<leader>ot`                                | Opens (or reopens) a terminal window                              |
+| `<leader>or`                                | Opens a repl                                                      |
+| `<leader>rf`                                | Runs your current file (or visual selection) in the output buffer |
+| `<leader>rt`                                | Runs your current file (or visual selection) in the terminal      |
+| `<leader>sd`                                | Send text in delimeter to terminal                                |
+| `<leader>ss`                                | Sends visual selection to terminal                                |
+| `<leader>sf`                                | Runs your entire file in a REPL (only for python)                 |
+| `:TerminatorSendToTerminal echo "hi there"` | Sends `echo "hi there"` to the terminal                           |
 
