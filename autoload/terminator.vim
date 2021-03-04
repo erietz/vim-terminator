@@ -74,7 +74,7 @@ if exists("g:terminator_runfile_map")
     let s:terminator_runfile_map = extend(s:terminator_runfile_map, g:terminator_runfile_map)
 endif
 
-function terminator#open_terminal()
+function terminator#open_terminal() abort
     if exists("g:terminator_buffer_number") && bufname(g:terminator_buffer_number) =~# '^term://'
         let buffer_name = bufname(g:terminator_buffer_number)
         execute("belowright split " . buffer_name )
@@ -89,7 +89,7 @@ function terminator#open_terminal()
     endif
 endfunction
 
-function terminator#send_to_terminal(contents)
+function terminator#send_to_terminal(contents) abort
     if !(exists("g:terminator_job_id")) 
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
@@ -101,11 +101,11 @@ function terminator#send_to_terminal(contents)
     endif
 endfunction
 
-function terminator#start_repl()
+function terminator#start_repl() abort
     let cmd = get(s:terminator_repl_command, &ft, 'language_not_found')
     if cmd == 'language_not_found' | echo 'language not in repl dictionary' | return | endif
     call terminator#open_terminal()
-    let cmd = terminator#substitute_command_variables(cmd)
+    let cmd = terminator#substitute_command_variables(cmd, expand("%"))
     call terminator#send_to_terminal(cmd . "\n")
 endfunction
 
@@ -141,12 +141,12 @@ function! terminator#get_visual_selection() range
     return selection
 endfunction 
 
-function terminator#substitute_command_variables(command)
+function terminator#substitute_command_variables(command, filename)
     let cmd = a:command
-    let dir = expand("%:p:h") . "/"
-    let fileName = expand("%:t")
-    let fileNameWithoutExt = expand("%:t:r")
-    let dirWithoutTrailingSlash = expand("%:h")
+    let dir = fnamemodify(a:filename, ":p:h") . "/"
+    let fileName = fnamemodify(a:filename, ":t")
+    let fileNameWithoutExt = fnamemodify(a:filename, ":t:r")
+    let dirWithoutTrailingSlash = fnamemodify(a:filename, ":h")
     let cmd = substitute(cmd, "\$dir", dir, "g")
     let cmd = substitute(cmd, "\$fileName ", fileName . " ", "g")
     let cmd = substitute(cmd, "\$fileNameWithoutExt", fileNameWithoutExt, "g")
@@ -154,14 +154,14 @@ function terminator#substitute_command_variables(command)
     return cmd
 endfunction
 
-function terminator#get_output_buffer(cmd)
+function terminator#get_output_buffer(cmd) abort
     let first_line = '[Running] ' . a:cmd
     let error_format = &errorformat
     let buf_num = bufnr('_OUTPUT_BUFFER_')
     if buf_num == -1
         keepalt belowright split _OUTPUT_BUFFER_
         exec 'resize ' . string(&lines - &lines / 1.618)
-        setlocal filetype=output_buffer buftype=nofile noswapfile nowrap cursorline modifiable nospell
+        setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
         let &errorformat=error_format
         let buf_num = bufnr('%')
         call setline(1, first_line)
@@ -257,24 +257,23 @@ let s:callbacks = {
 \ 'on_exit': function('terminator#on_event')
 \ }
 
-function! terminator#run_file_in_output_buffer(cmd)
+function! terminator#run_file_in_output_buffer(cmd) abort
     cexpr ''
     cwindow
-    let full_cmd = a:cmd
-    let win_num = terminator#get_output_buffer(full_cmd)
+    let win_num = terminator#get_output_buffer(a:cmd)
     let start_time = reltime()
-    let g:terminator_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time, 'stdout_buffer': [], 'stderr_buffer': []}, s:callbacks))
+    let g:terminator_running_job = jobstart(a:cmd, extend({'win_num': win_num, 'start_time': start_time, 'stdout_buffer': [], 'stderr_buffer': []}, s:callbacks))
 endfunction
 
-function terminator#run_current_file(output_location)
+function terminator#run_file(output_location, filename) abort
     let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
     if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
-    let cmd = terminator#substitute_command_variables(cmd)
+    let cmd = terminator#substitute_command_variables(cmd, a:filename)
     if stridx(cmd, "fileName") == -1
         let needs_filename_at_end = 1
     endif
     if exists("needs_filename_at_end")
-        let cmd = cmd . ' ' . expand("%:p")
+        let cmd = cmd . ' ' . fnamemodify(a:filename, ":p")
     endif
     if a:output_location == "terminal"
         call terminator#send_to_terminal(cmd . "\n")
@@ -287,4 +286,17 @@ endfunction
 
 function terminator#run_stop_job()
     call jobstop(g:terminator_running_job)
+endfunction
+
+function terminator#run_part_of_file(output_location, register) abort
+    "let file_type = &ft
+    let l:tmpfile = tempname() . "." . expand("%:e")
+    "silent edit tmpfile
+    call writefile(split(a:register, '\n'), fnameescape(l:tmpfile))
+    "let &filetype=file_type
+    "silent call deletebufline(expand("%"), 1, '$')
+    "call append(0, a:text)
+    "silent write
+    call terminator#run_file(a:output_location, fnameescape(l:tmpfile))
+    "edit #
 endfunction
