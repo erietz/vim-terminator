@@ -165,11 +165,13 @@ function terminator#get_output_buffer(cmd)
         let &errorformat=error_format
         let buf_num = bufnr('%')
         call setline(1, first_line)
+        call setline(2, '')
         wincmd p
     else
         let buffer_name = bufname(buf_num)
         silent call deletebufline(buffer_name, 1, '$')
         call setbufline(buffer_name, 1, first_line)
+        call setbufline(buffer_name, 2, '')
     endif
     return buf_num
 endfunction
@@ -207,14 +209,11 @@ endfunction
 
 function terminator#on_event(job_id, data, event) dict
     if a:event == 'stdout'
-        "echomsg a:data
-        "TODO: on slow computers (such as raspberry pi) multiple lines may
-        "print on one line
         if !empty(a:data[-1])
-            call extend(self.str_buffer, a:data)
-        elseif !empty(self.str_buffer)
-            let l:chunks = terminator#glue_lists_together(self.str_buffer, a:data)
-            let self.str_buffer = []
+            call extend(self.stdout_buffer, a:data)
+        elseif !empty(self.stdout_buffer)
+            let l:chunks = terminator#glue_lists_together(self.stdout_buffer, a:data)
+            let self.stdout_buffer = []
         else
             let l:chunks = a:data
             if empty(l:chunks[-1])
@@ -222,18 +221,28 @@ function terminator#on_event(job_id, data, event) dict
             endif
         endif
         if exists("l:chunks")
-            let l:str = copy(l:chunks)
+            let l:str = l:chunks
         endif
     elseif a:event == 'stderr'
-        "TODO: test if stderr needs buffered like stdout
-        let the_data = join(a:data)
-        caddexpr a:data
-        cwindow
-        if the_data == '' | return | endif
-        call appendbufline(self.win_num, '$', '')
+        if join(a:data) == '' | return | endif
         let l:str = 'stderr: check the quickfix window for errors'
+        if !empty(a:data[-1])
+            call extend(self.stderr_buffer, a:data)
+        elseif !empty(self.stderr_buffer)
+            let l:chunks = terminator#glue_lists_together(self.stderr_buffer, a:data)
+            let self.stderr_buffer = []
+        else
+            let l:chunks = a:data
+            if empty(l:chunks[-1])
+                call remove(l:chunks, -1)
+            endif
+        endif
+        if exists("l:chunks")
+            caddexpr l:chunks
+        endif
     else
         let run_time = split(reltimestr(reltime(self.start_time)))[0]
+        call appendbufline(self.win_num, '$', '')
         let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
         cwindow
     endif
@@ -254,7 +263,7 @@ function! terminator#run_file_in_output_buffer(cmd)
     let full_cmd = a:cmd
     let win_num = terminator#get_output_buffer(full_cmd)
     let start_time = reltime()
-    let g:terminator_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time, 'str_buffer': []}, s:callbacks))
+    let g:terminator_running_job = jobstart(full_cmd, extend({'win_num': win_num, 'start_time': start_time, 'stdout_buffer': [], 'stderr_buffer': []}, s:callbacks))
 endfunction
 
 function terminator#run_current_file(output_location)
