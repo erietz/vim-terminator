@@ -154,20 +154,35 @@ function terminator#substitute_command_variables(command, filename)
     return cmd
 endfunction
 
+function terminator#open_new_output_buffer()
+    let error_format = &errorformat
+    keepalt belowright split _OUTPUT_BUFFER_
+    exec 'resize ' . string(&lines - &lines / 1.618)
+    setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
+    let &errorformat=error_format
+    let buf_num = bufnr('%')
+    return buf_num
+endfunction
+
 function terminator#get_output_buffer(cmd) abort
     let first_line = '[Running] ' . a:cmd
-    let error_format = &errorformat
+    "let error_format = &errorformat
     let buf_num = bufnr('_OUTPUT_BUFFER_')
     if buf_num == -1
-        keepalt belowright split _OUTPUT_BUFFER_
-        exec 'resize ' . string(&lines - &lines / 1.618)
-        setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
-        let &errorformat=error_format
-        let buf_num = bufnr('%')
+        "keepalt belowright split _OUTPUT_BUFFER_
+        "exec 'resize ' . string(&lines - &lines / 1.618)
+        "setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
+        "let &errorformat=error_format
+        "let buf_num = bufnr('%')
+        let buf_num = terminator#open_new_output_buffer()
         call setline(1, first_line)
         call setline(2, '')
         wincmd p
     else
+        if bufwinid('_OUTPUT_BUFFER_') == -1
+            call terminator#open_new_output_buffer()
+            wincmd p
+        endif
         let buffer_name = bufname(buf_num)
         silent call deletebufline(buffer_name, 1, '$')
         call setbufline(buffer_name, 1, first_line)
