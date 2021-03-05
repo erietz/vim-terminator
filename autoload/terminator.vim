@@ -283,10 +283,10 @@ endfunction
 function terminator#run_file(output_location, filename) abort
     let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
     if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
-    let cmd = terminator#substitute_command_variables(cmd, a:filename)
     if stridx(cmd, "fileName") == -1
         let needs_filename_at_end = 1
     endif
+    let cmd = terminator#substitute_command_variables(cmd, a:filename)
     if exists("needs_filename_at_end")
         let cmd = cmd . ' ' . fnamemodify(a:filename, ":p")
     endif
