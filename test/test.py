@@ -1,5 +1,4 @@
-
-# In[1]:
+# --
 
 from time import sleep
 for i in range(10):
@@ -7,7 +6,8 @@ for i in range(10):
     #print()
     sleep(0.1)
 
-# In[2]:
+# --
 
-print('stuff in delimeter 2')
+print('stuff in delimiter 2')
 
+# --

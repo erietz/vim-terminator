@@ -31,7 +31,7 @@ Run the current file in a terminal:
 
 Send text between delimiters to a REPL:
 
-![Send text in delimeter to a new REPL](./media/send_to_repl.gif "Sending text to REPL")
+![Send text in delimiter to a new REPL](./media/send_to_repl.gif "Sending text to REPL")
 
 # Extensibility
 
@@ -58,7 +58,7 @@ allowing use of the variables defined below
 | $dirWithoutTrailingSlash | same as $dir with the trailing slash removed                               |
 
 
-The REPL command dictionary is defined similarly
+- The REPL command dictionary is defined similarly
 
 ```vim
 let s:terminator_repl_command = {
@@ -71,6 +71,17 @@ let s:terminator_repl_command = {
 `let g:terminator_clear_default_mappings = "anything text here"` to `init.vim`
   - If this route is taken, check the file `plugin/terminator.vim` for internal
   functions and commands.
+
+## A note about REPL delimiters
+
+- This plugin automatically detects the comment style based on file type.
+- By default the delimiters used of the form `In\[.*\]:`
+- The delimiters can be modified using the variable `g:terminator_repl_delimiter_regex`
+  - For example: you could use `let g:terminator_repl_delimiter_regex = '--'`
+  to delimit code blocks. In this example 
+    - A python code delimiter would be `# --`
+    - A javascript code delimiter would be `// --`
+    - etc.
 
 # Installation
 
@@ -91,7 +102,7 @@ plug 'erietz/vim-terminator'
 | `<leader>rf`                                | Runs your current file (or visual selection) in the output buffer |
 | `<leader>rt`                                | Runs your current file (or visual selection) in the terminal      |
 | `<leader>rs`                                | Stops the running job in the output buffer                        |
-| `<leader>sd`                                | Send text in delimeter to terminal                                |
+| `<leader>sd`                                | Send text in delimiter to terminal                                |
 | `<leader>ss`                                | Sends visual selection to terminal                                |
 | `<leader>sf`                                | Runs your entire file in a REPL (only for python)                 |
 | `:TerminatorSendToTerminal echo "hi there"` | Sends `echo "hi there"` to the terminal                           |

@@ -74,6 +74,12 @@ if exists("g:terminator_runfile_map")
     let s:terminator_runfile_map = extend(s:terminator_runfile_map, g:terminator_runfile_map)
 endif
 
+if exists("g:terminator_repl_delimiter_regex")
+    let s:terminator_repl_delimiter_regex = g:terminator_repl_delimiter_regex
+else
+    let s:terminator_repl_delimiter_regex = 'In\[.*\]:'
+endif
+
 function terminator#open_terminal() abort
     if exists("g:terminator_buffer_number") && bufname(g:terminator_buffer_number) =~# '^term://'
         let buffer_name = bufname(g:terminator_buffer_number)
@@ -109,24 +115,45 @@ function terminator#start_repl() abort
     call terminator#send_to_terminal(cmd . "\n")
 endfunction
 
+" Stolen from tpopes commentary plugin
+function terminator#get_filetype_comment() abort
+  return split(get(b:, 'commentary_format', substitute(substitute(substitute(
+        \ &commentstring, '^$', '%s', ''), '\S\zs%s',' %s', '') ,'%s\ze\S', '%s ', '')), '%s', 1)
+endfunction
+
 function terminator#get_in_delimiter()
-    " TODO: pass in the delimeter as an argument so different delimeters can
-    " be used
+    let [l, r] = terminator#get_filetype_comment()
+    let delimiter = l . s:terminator_repl_delimiter_regex . r
     let save_pos = getpos(".")
-    let last_delim = search('# In\[.*\]:', 'b')
+    "let last_delim = search('\(' . delimiter . '\|\%^\)', 'bW')
+    let last_delim = search(delimiter, 'b', line("w0"))
     call setpos('.', save_pos)
-    let next_delim = search('\(# In\[.*\]:\|\%$\)')
+    "let next_delim = search('\(' . delimiter . '\|\%$\)', 'W')
+    let next_delim = search(delimiter, '', line("w$"))
     call setpos('.', save_pos)
+    if (next_delim == 0) || (last_delim == 0)
+        echo "delimiter not found"
+        return ""
+    endif
     if next_delim == line('$')
         let cell = getbufline(bufnr('%'), last_delim + 1, next_delim)
     endif
     let cell = getbufline(bufnr('%'), last_delim + 1, next_delim - 1)
     let cell = filter(cell, '!empty(v:val)')
-    if cell[-1][0] == " "
-    " TODO: this breaks when cursor is on last line of buffer
-        let cell = cell + [" "]
+    if len(cell) > 0
+        if cell[-1][0] == " "
+            call add(cell, " ")
+        endif
     endif
-    return cell + ["\n"]
+    let cell = join(cell, "\n") . "\n"
+    return cell
+endfunction
+
+function terminator#send_delimiter_to_terminal()
+    let l:contents = terminator#get_in_delimiter()
+    if exists("l:contents")
+        call terminator#send_to_terminal(l:contents)
+    endif
 endfunction
 
 function! terminator#get_visual_selection() range

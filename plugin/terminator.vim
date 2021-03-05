@@ -19,7 +19,7 @@ else
     nnoremap <silent> <leader>rf :TerminatorRunFileInOutputBuffer <CR>
     nnoremap <silent> <leader>rs :TerminatorStopRun <CR>
 
-    nnoremap <silent> <leader>sd :call terminator#send_to_terminal(terminator#get_in_delimiter())<CR>
+    nnoremap <silent> <leader>sd :call terminator#send_delimiter_to_terminal()<CR>
     nnoremap <silent> <leader>sf :call terminator#send_to_terminal('%run ' . expand('%') . "\n")<CR>
     vnoremap <silent> <leader>ss :<C-U> call terminator#send_to_terminal(terminator#get_visual_selection())<CR>
 
