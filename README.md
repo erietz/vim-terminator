@@ -90,6 +90,7 @@ plug 'erietz/vim-terminator'
 | `<leader>or`                                | Opens a repl                                                      |
 | `<leader>rf`                                | Runs your current file (or visual selection) in the output buffer |
 | `<leader>rt`                                | Runs your current file (or visual selection) in the terminal      |
+| `<leader>rs`                                | Stops the running job in the output buffer                        |
 | `<leader>sd`                                | Send text in delimeter to terminal                                |
 | `<leader>ss`                                | Sends visual selection to terminal                                |
 | `<leader>sf`                                | Runs your entire file in a REPL (only for python)                 |
