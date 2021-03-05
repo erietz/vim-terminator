@@ -9,6 +9,8 @@ let g:terminator_autoloaded = 1
 let s:terminator_repl_command = {
   \'python' : 'ipython --no-autoindent',
   \'javascript': 'node',
+  \'lua': 'lua',
+  \'ruby': 'irb',
   \}
 
 " this dictionary was extracted out of json from the vscode extension
