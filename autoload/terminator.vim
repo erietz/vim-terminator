@@ -377,7 +377,7 @@ function terminator#run_file(output_location, filename) abort
     end
 endfunction
 
-function terminator#run_stop_job()
+function terminator#stop_running_job()
     if has('nvim')
         call jobstop(g:terminator_running_job)
     else

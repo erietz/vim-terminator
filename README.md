@@ -104,6 +104,5 @@ plug 'erietz/vim-terminator'
 | `<leader>rs`                                | Stops the running job in the output buffer                        |
 | `<leader>sd`                                | Send text in delimiter to terminal                                |
 | `<leader>ss`                                | Sends visual selection to terminal                                |
-| `<leader>sf`                                | Runs your entire file in a REPL (only for python)                 |
 | `:TerminatorSendToTerminal echo "hi there"` | Sends `echo "hi there"` to the terminal                           |
 
