@@ -1,6 +1,6 @@
 # About
 
-This plugin is all about running your code. Out of the box it comes with
+Vim-terminator is all about running your code. Out of the box it comes with
 support for 47 languages. Using automatic file type detection, this plugin can
 
 1. Run your current file in a custom "output buffer"
@@ -91,7 +91,7 @@ Using [vim-plug](https://github.com/junegunn/vim-plug)
 plug 'erietz/vim-terminator'
 ```
 
-*Note:* This plugin currently works for neovim only
+*Note:* This plugin requires neovim or vim version >= 8.0
 
 # Usage
 
