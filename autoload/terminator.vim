@@ -80,32 +80,63 @@ else
     let s:terminator_repl_delimiter_regex = 'In\[.*\]:'
 endif
 
+if exists("g:terminator_split_location")
+    let s:terminator_split_location = g:terminator_split_location
+else
+    let s:terminator_split_location = 'belowright'
+endif
+
+if exists("g:terminator_split_fraction")
+    let s:terminator_split_fraction = g:terminator_split_fraction
+else
+    let s:terminator_split_fraction = 0.381953
+endif
+
+function terminator#resize_window()
+    execute printf('resize %s', string(&lines * s:terminator_split_fraction))
+    "execute printf('resize %s', string(&columns * s:terminator_split_fraction))
+endfunction
+
 function terminator#open_terminal() abort
-    if exists("g:terminator_terminal_buffer_number") && bufname(g:terminator_terminal_buffer_number) =~# '^term://'
-        let buf_name = bufname(g:terminator_terminal_buffer_number)
-        execute("belowright split " . buf_name )
-        exec 'resize ' . string(&lines - &lines / 1.618)
+    if exists("s:terminator_terminal_buffer_number") && bufname(s:terminator_terminal_buffer_number) =~#  '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
+        let buf_name = bufname(s:terminator_terminal_buffer_number)
+        if has('nvim')
+            execute printf('%s split %s', s:terminator_split_location, buf_name)
+            call terminator#resize_window()
+        else
+            execute printf('%s split %s', s:terminator_split_location, buf_name)
+            call terminator#resize_window()
+        endif
         wincmd p
     else
-        belowright split | terminal
-        exec 'resize ' . string(&lines - &lines / 1.618)
         if has('nvim')
+            execute printf('%s split | terminal', s:terminator_split_location)
+            call terminator#resize_window()
             let s:terminator_job_id = b:terminal_job_id
+        else
+            execute printf('%s terminal', s:terminator_split_location)
+            call terminator#resize_window()
         endif
-        let g:terminator_terminal_buffer_number = bufnr("%")
+        let s:terminator_terminal_buffer_number = bufnr("%")
         wincmd p
     endif
 endfunction
 
 function terminator#send_to_terminal(contents) abort
-    if !(exists("s:terminator_job_id")) 
+    if !(exists("s:terminator_terminal_buffer_number")) 
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
-    elseif bufname(g:terminator_terminal_buffer_number) !~# '^term://'
-        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
+    elseif bufname(s:terminator_terminal_buffer_number) !~# '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
+        "echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
+        echo "regex does not match"
+        echomsg bufname(s:terminator_terminal_buffer_number)
         call terminator#open_terminal()
     else
-        call chansend(s:terminator_job_id, a:contents)
+        if has('nvim')
+            call chansend(s:terminator_job_id, a:contents)
+        else
+            call term_sendkeys(s:terminator_terminal_buffer_number, a:contents)
+        endif
     endif
 endfunction
 
