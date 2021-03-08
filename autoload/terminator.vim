@@ -82,8 +82,8 @@ endif
 
 function terminator#open_terminal() abort
     if exists("g:terminator_buffer_number") && bufname(g:terminator_buffer_number) =~# '^term://'
-        let buffer_name = bufname(g:terminator_buffer_number)
-        execute("belowright split " . buffer_name )
+        let buf_name = bufname(g:terminator_buffer_number)
+        execute("belowright split " . buf_name )
         exec 'resize ' . string(&lines - &lines / 1.618)
         wincmd p
     else
@@ -193,14 +193,8 @@ endfunction
 
 function terminator#get_output_buffer(cmd) abort
     let first_line = '[Running] ' . a:cmd
-    "let error_format = &errorformat
     let buf_num = bufnr('_OUTPUT_BUFFER_')
     if buf_num == -1
-        "keepalt belowright split _OUTPUT_BUFFER_
-        "exec 'resize ' . string(&lines - &lines / 1.618)
-        "setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
-        "let &errorformat=error_format
-        "let buf_num = bufnr('%')
         let buf_num = terminator#open_new_output_buffer()
         call setline(1, first_line)
         call setline(2, '')
@@ -210,10 +204,10 @@ function terminator#get_output_buffer(cmd) abort
             call terminator#open_new_output_buffer()
             wincmd p
         endif
-        let buffer_name = bufname(buf_num)
-        silent call deletebufline(buffer_name, 1, '$')
-        call setbufline(buffer_name, 1, first_line)
-        call setbufline(buffer_name, 2, '')
+        let buf_name = bufname(buf_num)
+        silent call deletebufline(buf_name, 1, '$')
+        call setbufline(buf_name, 1, first_line)
+        call setbufline(buf_name, 2, '')
     endif
     return buf_num
 endfunction
@@ -249,7 +243,7 @@ function terminator#glue_lists_together(list1, list2)
     return new_list
 endfunction
 
-function terminator#on_event(job_id, data, event) dict
+function terminator#nvim_on_event(job_id, data, event) dict
     if a:event == 'stdout'
         if !empty(a:data[-1])
             call extend(self.stdout_buffer, a:data)
@@ -283,53 +277,51 @@ function terminator#on_event(job_id, data, event) dict
             caddexpr l:chunks
         endif
     else
-        let run_time = split(reltimestr(reltime(self.start_time)))[0]
-        call appendbufline(self.win_num, '$', '')
+        let run_time = split(reltimestr(reltime(s:start_time)))[0]
+        call appendbufline(s:output_buf_num, '$', '')
         let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
         cwindow
     endif
     if exists("l:str")
-        call appendbufline(self.win_num, '$', l:str)
+        call appendbufline(s:output_buf_num, '$', l:str)
     endif
 endfunction
 
-let s:callbacks = {
-\ 'on_stdout': function('terminator#on_event'),
-\ 'on_stderr': function('terminator#on_event'),
-\ 'on_exit': function('terminator#on_event')
-\ }
-
-
-function terminator#vim_exit_status(channel, data)
-    let run_time = split(reltimestr(reltime(s:vim_starttime)))[0]
-    call appendbufline(s:vim_buf_num, '$', '')
+function terminator#vim_on_exit(channel, data)
+    let run_time = split(reltimestr(reltime(s:start_time)))[0]
+    call appendbufline(s:output_buf_num, '$', '')
     let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
-    call appendbufline(s:vim_buf_num, '$', l:str)
+    call appendbufline(s:output_buf_num, '$', l:str)
+    cwindow
+endfunction
+
+function terminator#vim_on_error(channel, data)
+    if a:data == '' | return | endif
+    let l:str = 'stderr: check the quickfix window for errors'
+    call appendbufline(s:output_buf_num, '$', l:str)
+    caddexpr a:data
 endfunction
 
 function! terminator#run_file_in_output_buffer(cmd) abort
     cexpr ''
     cwindow
-    let win_num = terminator#get_output_buffer(a:cmd)
-    let start_time = reltime()
-    let s:vim_starttime = reltime()
-    let s:vim_buf_num = win_num
+    let s:output_buf_num = terminator#get_output_buffer(a:cmd)
+    let s:start_time = reltime()
+    let cmd =  ['/bin/sh', '-c', a:cmd]
     if has("nvim")
-        let g:terminator_running_job = jobstart(a:cmd, extend({
-                    \ 'win_num': win_num,
-                    \ 'start_time': start_time,
+        let g:terminator_running_job = jobstart(cmd, {
                     \ 'stdout_buffer': [],
-                    \ 'stderr_buffer': []
-                    \ }, s:callbacks))
+                    \ 'stderr_buffer': [],
+                    \ 'on_stdout': function('terminator#nvim_on_event'),
+                    \ 'on_stderr': function('terminator#nvim_on_event'),
+                    \ 'on_exit': function('terminator#nvim_on_event'),
+                    \ })
     else
-        "let cmd = split(a:cmd)
-        let cmd =  ['/bin/sh', '-c', a:cmd]
         let g:terminator_running_job = job_start(cmd, {
                     \ 'out_io': "buffer",
-                    \ 'err_io': "buffer",
-                    \ 'out_buf': win_num,
-                    \ 'err_buf': win_num,
-                    \ 'exit_cb': function('terminator#vim_exit_status')
+                    \ 'out_buf': s:output_buf_num,
+                    \ 'err_cb': function('terminator#vim_on_error'),
+                    \ 'exit_cb': function('terminator#vim_on_exit'),
                     \ })
     endif
 endfunction
