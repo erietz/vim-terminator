@@ -127,8 +127,7 @@ function terminator#send_to_terminal(contents) abort
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
     elseif bufname(s:terminator_terminal_buffer_number) !~# '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
-        "echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
-        echo "regex does not match"
+        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         echomsg bufname(s:terminator_terminal_buffer_number)
         call terminator#open_terminal()
     else
@@ -216,7 +215,7 @@ endfunction
 
 function terminator#open_new_output_buffer()
     let error_format = &errorformat
-    keepalt belowright split _OUTPUT_BUFFER_
+    execute printf('%s split _OUTPUT_BUFFER_', s:terminator_split_location)
     exec 'resize ' . string(&lines - &lines / 1.618)
     setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
     let &errorformat=error_format
