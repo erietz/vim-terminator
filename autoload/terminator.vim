@@ -299,12 +299,39 @@ let s:callbacks = {
 \ 'on_exit': function('terminator#on_event')
 \ }
 
+
+function terminator#vim_exit_status(channel, data)
+    let run_time = split(reltimestr(reltime(s:vim_starttime)))[0]
+    call appendbufline(s:vim_buf_num, '$', '')
+    let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
+    call appendbufline(s:vim_buf_num, '$', l:str)
+endfunction
+
 function! terminator#run_file_in_output_buffer(cmd) abort
     cexpr ''
     cwindow
     let win_num = terminator#get_output_buffer(a:cmd)
     let start_time = reltime()
-    let g:terminator_running_job = jobstart(a:cmd, extend({'win_num': win_num, 'start_time': start_time, 'stdout_buffer': [], 'stderr_buffer': []}, s:callbacks))
+    let s:vim_starttime = reltime()
+    let s:vim_buf_num = win_num
+    if has("nvim")
+        let g:terminator_running_job = jobstart(a:cmd, extend({
+                    \ 'win_num': win_num,
+                    \ 'start_time': start_time,
+                    \ 'stdout_buffer': [],
+                    \ 'stderr_buffer': []
+                    \ }, s:callbacks))
+    else
+        "let cmd = split(a:cmd)
+        let cmd =  ['/bin/sh', '-c', a:cmd]
+        let g:terminator_running_job = job_start(cmd, {
+                    \ 'out_io': "buffer",
+                    \ 'err_io': "buffer",
+                    \ 'out_buf': win_num,
+                    \ 'err_buf': win_num,
+                    \ 'exit_cb': function('terminator#vim_exit_status')
+                    \ })
+    endif
 endfunction
 
 function terminator#run_file(output_location, filename) abort
