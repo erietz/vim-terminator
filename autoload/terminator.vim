@@ -100,13 +100,8 @@ endfunction
 function terminator#open_terminal() abort
     if exists("s:terminator_terminal_buffer_number") && bufname(s:terminator_terminal_buffer_number) =~#  '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
         let buf_name = bufname(s:terminator_terminal_buffer_number)
-        if has('nvim')
-            execute printf('%s split %s', s:terminator_split_location, buf_name)
-            call terminator#resize_window()
-        else
-            execute printf('%s split %s', s:terminator_split_location, buf_name)
-            call terminator#resize_window()
-        endif
+        execute printf('%s split %s', s:terminator_split_location, buf_name)
+        call terminator#resize_window()
         wincmd p
     else
         if has('nvim')
