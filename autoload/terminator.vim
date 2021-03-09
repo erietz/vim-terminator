@@ -210,7 +210,7 @@ endfunction
 
 function terminator#open_new_output_buffer()
     let error_format = &errorformat
-    execute printf('%s split _OUTPUT_BUFFER_', s:terminator_split_location)
+    execute printf('%s split OUTPUT_BUFFER', s:terminator_split_location)
     exec 'resize ' . string(&lines - &lines / 1.618)
     setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
     let &errorformat=error_format
@@ -220,14 +220,14 @@ endfunction
 
 function terminator#get_output_buffer(cmd) abort
     let first_line = '[Running] ' . a:cmd
-    let buf_num = bufnr('_OUTPUT_BUFFER_')
+    let buf_num = bufnr('OUTPUT_BUFFER')
     if buf_num == -1
         let buf_num = terminator#open_new_output_buffer()
         call setline(1, first_line)
         call setline(2, '')
         wincmd p
     else
-        if bufwinid('_OUTPUT_BUFFER_') == -1
+        if bufwinid('OUTPUT_BUFFER') == -1
             call terminator#open_new_output_buffer()
             wincmd p
         endif
