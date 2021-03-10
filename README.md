@@ -1,17 +1,18 @@
 # About
 
 Vim-terminator is all about running your code. Out of the box it comes with
-support for 47 languages. Using automatic file type detection, this plugin can
+support for 47 languages and can be extended for any vim file type. Using
+automatic file type detection, this plugin can
 
-1. Run your current file in a custom "output buffer"
+1. Run your current file (or visual selection) in a custom "output buffer"
   - stdout is sent to the output buffer and stderr is sent to the quickfix window
   - The process is executed asynchronously leaving your editor completely functional
   - The process is timed and reported in seconds to 6 decimal places at the end
   of the running job
-2. Run your current file in a neovim terminal
+2. Run your current file (or visual selection) in a neovim terminal
   - This allows for running interactive programs (e.g. user input)
 3. Start a REPL using the current file type
-4. Send parts of the current buffer to a terminal. This currently includes
+4. Send parts of the current buffer to a terminal. This includes
   - Visually selected text
   - Text between commented delimiters
 
@@ -32,6 +33,18 @@ Run the current file in a terminal:
 Send text between delimiters to a REPL:
 
 ![Send text in delimiter to a new REPL](./media/send_to_repl.gif "Sending text to REPL")
+
+
+# Installation
+
+If you use [vim-plug](https://github.com/junegunn/vim-plug)
+
+```vim
+plug 'erietz/vim-terminator'
+```
+
+*Note:* This plugin requires neovim or vim version >= 8.0
+
 
 # Extensibility
 
@@ -68,11 +81,11 @@ let s:terminator_repl_command = {
 ````
 
 - Several key mappings are set by default, but they can be removed by adding
-`let g:terminator_clear_default_mappings = "anything text here"` to `init.vim`
+`let g:terminator_clear_default_mappings = "foo bar"` to `init.vim`
   - If this route is taken, check the file `plugin/terminator.vim` for internal
   functions and commands.
 
-## A note about REPL delimiters
+## REPL delimiters
 
 - This plugin automatically detects the comment style based on file type.
 - By default the delimiters used of the form `In\[.*\]:`
@@ -83,15 +96,22 @@ let s:terminator_repl_command = {
     - A javascript code delimiter would be `// --`
     - etc.
 
-# Installation
+## Managing window splits
 
-Using [vim-plug](https://github.com/junegunn/vim-plug)
+Two variables can be set to help manage how windows are split. A combination 
+of these variables can go a long way.
 
-```vim
-plug 'erietz/vim-terminator'
-```
-
-*Note:* This plugin requires neovim or vim version >= 8.0
+1. `let g:terminator_split_fraction = <decimal>` where `<decimal>` is a number between 0 and 1.
+2. `let g:terminator_split_location = '<option>'` where `<option>` is something like
+  - `belowright`
+  - `aboveleft`
+  - `topleft`
+  - `botright`
+  - `vertical belowright`
+  - `vertical aboveleft`
+  - `vertical topleft`
+  - `vertical botright`
+  - see `:help vertical` for details of these options
 
 # Usage
 

@@ -83,22 +83,27 @@ endif
 if exists("g:terminator_split_location")
     let s:terminator_split_location = g:terminator_split_location
 else
-    let s:terminator_split_location = 'belowright'
+    let s:terminator_split_location = 'botright'
 endif
 
 if exists("g:terminator_split_fraction")
     let s:terminator_split_fraction = g:terminator_split_fraction
 else
-    let s:terminator_split_fraction = 0.381953
+    let s:terminator_split_fraction = 0.3819660113000001
 endif
 
+let s:terminator_terminal_buffer_name_regex = '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
+
 function terminator#resize_window()
-    execute printf('resize %s', string(&lines * s:terminator_split_fraction))
-    "execute printf('resize %s', string(&columns * s:terminator_split_fraction))
+    if stridx(s:terminator_split_location, "vertical") == -1
+        execute printf('resize %s', string(&lines * s:terminator_split_fraction))
+    else
+        execute printf('vertical resize %s', string(&columns * s:terminator_split_fraction))
+    endif
 endfunction
 
 function terminator#open_terminal() abort
-    if exists("s:terminator_terminal_buffer_number") && bufname(s:terminator_terminal_buffer_number) =~#  '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
+    if exists("s:terminator_terminal_buffer_number") && bufname(s:terminator_terminal_buffer_number) =~# s:terminator_terminal_buffer_name_regex
         let buf_name = bufname(s:terminator_terminal_buffer_number)
         execute printf('%s split %s', s:terminator_split_location, buf_name)
         call terminator#resize_window()
@@ -121,7 +126,7 @@ function terminator#send_to_terminal(contents) abort
     if !(exists("s:terminator_terminal_buffer_number")) 
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
-    elseif bufname(s:terminator_terminal_buffer_number) !~# '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
+    elseif bufname(s:terminator_terminal_buffer_number) !~# s:terminator_terminal_buffer_name_regex
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         echomsg bufname(s:terminator_terminal_buffer_number)
         call terminator#open_terminal()
@@ -211,7 +216,7 @@ endfunction
 function terminator#open_new_output_buffer()
     let error_format = &errorformat
     execute printf('%s split OUTPUT_BUFFER', s:terminator_split_location)
-    exec 'resize ' . string(&lines - &lines / 1.618)
+    call terminator#resize_window()
     setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
     let &errorformat=error_format
     let buf_num = bufnr('%')
