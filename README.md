@@ -129,3 +129,14 @@ of these variables can go a long way.
   - `vertical topleft`
   - `vertical botright`
   - see `:help vertical` for details of these options
+
+
+# FAQ
+
+> The quickfix window is populated but I can't jump to the errors
+
+Set the `:compiler` for the file type. This in turn sets `errorformat`. See `:h errorformat`
+
+> The quickfix window is not catching errors after running code of a different file type
+
+Switch to the output buffer and run `:bdelete`. Then run your code again.
