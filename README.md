@@ -129,8 +129,3 @@ of these variables can go a long way.
   - `vertical topleft`
   - `vertical botright`
   - see `:help vertical` for details of these options
-
----
-> "My splits get resized when the quickfix window closes" 
-- Try `set noequalalways`
----
