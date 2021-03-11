@@ -217,7 +217,7 @@ function terminator#open_new_output_buffer()
     let error_format = &errorformat
     execute printf('%s split OUTPUT_BUFFER', s:terminator_split_location)
     call terminator#resize_window()
-    setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell
+    setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell nonumber norelativenumber winfixheight winfixwidth
     let &errorformat=error_format
     let buf_num = bufnr('%')
     return buf_num
