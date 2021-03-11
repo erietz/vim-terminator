@@ -312,7 +312,7 @@ function terminator#nvim_on_event(job_id, data, event) dict
         let run_time = split(reltimestr(reltime(s:start_time)))[0]
         call appendbufline(s:output_buf_num, '$', '')
         let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
-        cwindow
+        botright cwindow
     endif
     if exists("l:str")
         call appendbufline(s:output_buf_num, '$', l:str)
@@ -324,7 +324,7 @@ function terminator#vim_on_exit(channel, data)
     call appendbufline(s:output_buf_num, '$', '')
     let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
     call appendbufline(s:output_buf_num, '$', l:str)
-    cwindow
+    botright cwindow
 endfunction
 
 function terminator#vim_on_error(channel, data)
@@ -336,7 +336,7 @@ endfunction
 
 function! terminator#run_file_in_output_buffer(cmd) abort
     cexpr ''
-    cwindow
+    botright cwindow
     let s:output_buf_num = terminator#get_output_buffer(a:cmd)
     let s:start_time = reltime()
     let cmd =  ['/bin/sh', '-c', a:cmd]
