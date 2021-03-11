@@ -1,15 +1,17 @@
+> I require a cutting tool
+
 # About
 
-Vim-terminator is all about running your code. Out of the box it comes with
-support for 47 languages and can be extended for any vim file type. Using
-automatic file type detection, this plugin can
+Vim-terminator runs your current file. Out of the box it comes with support
+for 47 languages and can be extended for any vim file type. Using automatic
+file type detection, this plugin can
 
 1. Run your current file (or visual selection) in a custom "output buffer"
   - stdout is sent to the output buffer and stderr is sent to the quickfix window
   - The process is executed asynchronously leaving your editor completely functional
   - The process is timed and reported in seconds to 6 decimal places at the end
   of the running job
-2. Run your current file (or visual selection) in a neovim terminal
+2. Run your current file (or visual selection) in a vim terminal
   - This allows for running interactive programs (e.g. user input)
 3. Start a REPL using the current file type
 4. Send parts of the current buffer to a terminal. This includes
@@ -45,6 +47,25 @@ plug 'erietz/vim-terminator'
 
 *Note:* This plugin requires neovim or vim version >= 8.0
 
+# Usage
+
+| Key map                                     | Description                                                       |
+| ---                                         | ---                                                               |
+| `<leader>ot`                                | Opens (or reopens) a terminal window                              |
+| `<leader>or`                                | Opens a repl                                                      |
+| `<leader>rf`                                | Runs your current file (or visual selection) in the output buffer |
+| `<leader>rt`                                | Runs your current file (or visual selection) in the terminal      |
+| `<leader>rs`                                | Stops the running job in the output buffer                        |
+| `<leader>sd`                                | Send text in delimiter to terminal                                |
+| `<leader>ss`                                | Sends visual selection to terminal                                |
+| `:TerminatorSendToTerminal echo "hi there"` | Sends `echo "hi there"` to the terminal                           |
+
+
+> "I do not like these key bindings, I'd like to set my own"
+- Several key mappings are set by default, but they can be removed by adding
+`let g:terminator_clear_default_mappings = "foo bar"` to `init.vim` or `.vimrc`
+  - If this route is taken, check the file `plugin/terminator.vim` for internal
+  functions and commands.
 
 # Extensibility
 
@@ -80,10 +101,6 @@ let s:terminator_repl_command = {
   \}
 ````
 
-- Several key mappings are set by default, but they can be removed by adding
-`let g:terminator_clear_default_mappings = "foo bar"` to `init.vim`
-  - If this route is taken, check the file `plugin/terminator.vim` for internal
-  functions and commands.
 
 ## REPL delimiters
 
@@ -113,16 +130,7 @@ of these variables can go a long way.
   - `vertical botright`
   - see `:help vertical` for details of these options
 
-# Usage
-
-| Key map                                     | Description                                                       |
-| ---                                         | ---                                                               |
-| `<leader>ot`                                | Opens (or reopens) a terminal window                              |
-| `<leader>or`                                | Opens a repl                                                      |
-| `<leader>rf`                                | Runs your current file (or visual selection) in the output buffer |
-| `<leader>rt`                                | Runs your current file (or visual selection) in the terminal      |
-| `<leader>rs`                                | Stops the running job in the output buffer                        |
-| `<leader>sd`                                | Send text in delimiter to terminal                                |
-| `<leader>ss`                                | Sends visual selection to terminal                                |
-| `:TerminatorSendToTerminal echo "hi there"` | Sends `echo "hi there"` to the terminal                           |
-
+---
+> "My splits get resized when the quickfix window closes" 
+- Try `set noequalalways`
+---
