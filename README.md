@@ -95,7 +95,7 @@ allowing use of the variables defined below
 - The REPL command dictionary is defined similarly
 
 ```vim
-let s:terminator_repl_command = {
+let g:terminator_repl_command = {
   \'python' : 'ipython --no-autoindent',
   \'javascript': 'node',
   \}
