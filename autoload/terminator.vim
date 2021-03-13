@@ -11,6 +11,7 @@ let s:terminator_repl_command = {
   \'javascript': 'node',
   \'lua': 'lua',
   \'ruby': 'irb',
+  \'haskell': 'stack ghci',
   \}
 
 " this dictionary was extracted out of json from the vscode extension
@@ -32,7 +33,7 @@ let s:terminator_runfile_map = {
             \ "fsharp": "fsi",
             \ "go": "go run",
             \ "groovy": "groovy",
-            \ "haskell": "runhaskell",
+            \ "haskell": "stack ghc",
             \ "haxe": "haxe --cwd $dirWithoutTrailingSlash --run $fileNameWithoutExt",
             \ "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
             \ "javascript": "node",
