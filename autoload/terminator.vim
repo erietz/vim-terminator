@@ -114,9 +114,11 @@ function terminator#open_terminal() abort
             execute printf('%s split | terminal', s:terminator_split_location)
             call terminator#resize_window()
             let s:terminator_job_id = b:terminal_job_id
+            set winfixheight winfixwidth
         else
             execute printf('%s terminal', s:terminator_split_location)
             call terminator#resize_window()
+            set winfixheight winfixwidth
         endif
         let s:terminator_terminal_buffer_number = bufnr("%")
         wincmd p
@@ -314,6 +316,7 @@ function terminator#nvim_on_event(job_id, data, event) dict
         call appendbufline(s:output_buf_num, '$', '')
         let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
         botright cwindow
+        call terminator#shrink_output_buffer()
     endif
     if exists("l:str")
         call appendbufline(s:output_buf_num, '$', l:str)
@@ -326,6 +329,7 @@ function terminator#vim_on_exit(channel, data)
     let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
     call appendbufline(s:output_buf_num, '$', l:str)
     botright cwindow
+    call terminator#shrink_output_buffer()
 endfunction
 
 function terminator#vim_on_error(channel, data)
@@ -390,4 +394,25 @@ function terminator#run_part_of_file(output_location, register) abort
     let l:tmpfile = tempname() . "." . expand("%:e")
     call writefile(split(a:register, '\n'), fnameescape(l:tmpfile))
     call terminator#run_file(a:output_location, fnameescape(l:tmpfile))
+endfunction
+
+function terminator#shrink_output_buffer()
+    if !exists('g:terminator_auto_shrink_output') || (stridx(s:terminator_split_location, 'vert') != -1)
+        return
+    endif
+    for i in range(1, winnr('$'))
+        if bufname(winbufnr(i)) == 'OUTPUT_BUFFER'
+            let win_num = i
+        endif
+    endfor
+    execute win_num . 'wincmd w'
+    let size1 = &lines * s:terminator_split_fraction
+    let size2 = line('$') + 1
+    if size2 > size1
+        let new_size = size1
+    else
+        let new_size = size2
+    endif
+    execute 'resize ' . string(new_size)
+    wincmd p
 endfunction

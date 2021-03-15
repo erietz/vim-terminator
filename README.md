@@ -130,6 +130,10 @@ of these variables can go a long way.
   - `vertical botright`
   - see `:help vertical` for details of these options
 
+There is also the option `let g:terminator_auto_shrink_output = 1` which
+automatically shrinks the output buffer (in a horizontal split) to the size of
+the output if it is less than the maximum split size given by
+`g:terminator_split_fraction`.
 
 # FAQ
 
