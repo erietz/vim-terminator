@@ -36,6 +36,8 @@ Send text between delimiters to a REPL:
 
 ![Send text in delimiter to a new REPL](./media/send_to_repl.gif "Sending text to REPL")
 
+Automatic window resizing
+
 ![Automatic window resizing](./media/resizing.gif)
 
 # Installation
