@@ -156,34 +156,37 @@ endfunction
 function terminator#get_in_delimiter()
     let [l, r] = terminator#get_filetype_comment()
     let delimiter = l . s:terminator_repl_delimiter_regex . r
-
-    " get line numbers of delimiters (0 if not found)
     let save_pos = getpos(".")
-    let last_delim = search(delimiter, 'b', line("w0"))
-    call setpos('.', save_pos)
-    let next_delim = search(delimiter, '', line("w$"))
-    call setpos('.', save_pos)
 
-    if (last_delim == 0) && (next_delim != 0)
-        let cell = getline(1, next_delim - 1)
-    elseif (last_delim != 0) && (next_delim == 0)
-        let cell = getline(last_delim + 1, line('$'))
-    elseif (last_delim != 0) && (next_delim != 0)
-        let cell = getline(last_delim + 1, next_delim - 1)
+    " Find delimiters: always start from search_pos := end of current line.
+    " Last delimiter: search backwards (accept match at starting cursor pos).
+    let search_pos = [save_pos[0], save_pos[1], charcol('$'), save_pos[3]]
+    call setpos('.', search_pos)
+    let last_delim = search(delimiter, 'ncWb', line("0"))
+    if last_delim == 0
+	let ladjust = 0
     else
-        echo "delimiter not found"
-        return ""
+	let ladjust = 1
     endif
 
-    " remove empty lines
+    " Next delimiter: search forwards (dont accept match at starting cursor pos).
+    let next_delim = search(delimiter, 'nW', line("$"))
+    if next_delim == 0
+	let next_delim = line('$')
+	let nadjust = 0
+    else
+	let nadjust = 1
+    endif
+
+    call setpos('.', save_pos)
+
+    let cell = getline(last_delim + ladjust, next_delim - nadjust)
     let cell = filter(cell, '!empty(v:val)')
-    " add extra line if last line is indented
     if len(cell) > 0
         if cell[-1][0] == " "
             call add(cell, " ")
         endif
     endif
-
     let cell = join(cell, "\n") . "\n"
     return cell
 endfunction
