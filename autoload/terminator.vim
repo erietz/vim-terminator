@@ -131,7 +131,6 @@ function terminator#send_to_terminal(contents) abort
         call terminator#open_terminal()
     elseif bufname(s:terminator_terminal_buffer_number) !~# s:terminator_terminal_buffer_name_regex
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
-        echomsg bufname(s:terminator_terminal_buffer_number)
         call terminator#open_terminal()
     else
         if has('nvim')
@@ -159,27 +158,34 @@ endfunction
 function terminator#get_in_delimiter()
     let [l, r] = terminator#get_filetype_comment()
     let delimiter = l . s:terminator_repl_delimiter_regex . r
+
+    " get line numbers of delimiters (0 if not found)
     let save_pos = getpos(".")
-    "let last_delim = search('\(' . delimiter . '\|\%^\)', 'bW')
     let last_delim = search(delimiter, 'b', line("w0"))
     call setpos('.', save_pos)
-    "let next_delim = search('\(' . delimiter . '\|\%$\)', 'W')
     let next_delim = search(delimiter, '', line("w$"))
     call setpos('.', save_pos)
-    if (next_delim == 0) || (last_delim == 0)
+
+    if (last_delim == 0) && (next_delim != 0)
+        let cell = getline(1, next_delim - 1)
+    elseif (last_delim != 0) && (next_delim == 0)
+        let cell = getline(last_delim + 1, line('$'))
+    elseif (last_delim != 0) && (next_delim != 0)
+        let cell = getline(last_delim + 1, next_delim - 1)
+    else
         echo "delimiter not found"
         return ""
     endif
-    if next_delim == line('$')
-        let cell = getbufline(bufnr('%'), last_delim + 1, next_delim)
-    endif
-    let cell = getbufline(bufnr('%'), last_delim + 1, next_delim - 1)
+
+    " remove empty lines
     let cell = filter(cell, '!empty(v:val)')
+    " add extra line if last line is indented
     if len(cell) > 0
         if cell[-1][0] == " "
             call add(cell, " ")
         endif
     endif
+
     let cell = join(cell, "\n") . "\n"
     return cell
 endfunction
@@ -296,7 +302,7 @@ function terminator#nvim_on_event(job_id, data, event) dict
         endif
     elseif a:event == 'stderr'
         if join(a:data) == '' | return | endif
-        let l:str = 'stderr: check the quickfix window for errors'
+        let l:str = 'stderr: check the quickfix window'
         if !empty(a:data[-1])
             call extend(self.stderr_buffer, a:data)
         elseif !empty(self.stderr_buffer)
@@ -334,7 +340,7 @@ endfunction
 
 function terminator#vim_on_error(channel, data)
     if a:data == '' | return | endif
-    let l:str = 'stderr: check the quickfix window for errors'
+    let l:str = 'stderr: check the quickfix window'
     call appendbufline(s:output_buf_num, '$', l:str)
     caddexpr a:data
 endfunction
