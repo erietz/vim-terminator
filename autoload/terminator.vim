@@ -253,70 +253,24 @@ function terminator#get_output_buffer(cmd) abort
     return buf_num
 endfunction
 
-" The data that is outputted from the async command looks like this
-
-"['hello world 1', '']
-"['hello world 2', '']
-"['hello world 3']
-"['', '']
-"['hello world 4', '']
-"['hello world']
-"[' 5', '']
-"['hello world 6', '']
-
-" If the last item in the list is not an empty string, then the first item in
-" the next message needs to be joined with the last item from the previous
-" list
-
-function terminator#glue_lists_together(list1, list2)
-    let list1 = copy(a:list1)
-    let list2 = copy(a:list2)
-    if len(list1) > 1
-        let resin = remove(list1, -1)
-    else
-        let resin = remove(list1, 0)
-    endif
-    let hardener = remove(list2, 0)
-    let new_list = list1 + [resin . hardener] + list2
-    if new_list[-1] == ''
-        call remove(new_list, -1)
-    endif
-    return new_list
-endfunction
-
 function terminator#nvim_on_event(job_id, data, event) dict
+    " see :help channel-bytes for details on this
     if a:event == 'stdout'
-        if !empty(a:data[-1])
-            call extend(self.stdout_buffer, a:data)
-        elseif !empty(self.stdout_buffer)
-            let l:chunks = terminator#glue_lists_together(self.stdout_buffer, a:data)
-            let self.stdout_buffer = []
-        else
-            let l:chunks = a:data
-            if empty(l:chunks[-1])
-                call remove(l:chunks, -1)
-            endif
-        endif
-        if exists("l:chunks")
-            let l:str = l:chunks
-        endif
+        let self.stdout_queue[-1] .= a:data[0]
+        call extend(self.stdout_queue, a:data[1:])
+        let l:str = self.stdout_queue[:-2]
+        let self.stdout_queue = [self.stdout_queue[-1]]
+
     elseif a:event == 'stderr'
+        " [''] is returned if there are no errors
         if join(a:data) == '' | return | endif
         let l:str = 'stderr: check the quickfix window'
-        if !empty(a:data[-1])
-            call extend(self.stderr_buffer, a:data)
-        elseif !empty(self.stderr_buffer)
-            let l:chunks = terminator#glue_lists_together(self.stderr_buffer, a:data)
-            let self.stderr_buffer = []
-        else
-            let l:chunks = a:data
-            if empty(l:chunks[-1])
-                call remove(l:chunks, -1)
-            endif
-        endif
-        if exists("l:chunks")
-            caddexpr l:chunks
-        endif
+
+        let self.stderr_queue[-1] .= a:data[0]
+        call extend(self.stderr_queue, a:data[1:])
+        caddexpr self.stderr_queue[:-2]
+        let self.stderr_queue = [self.stderr_queue[-1]]
+
     else
         let run_time = split(reltimestr(reltime(s:start_time)))[0]
         call appendbufline(s:output_buf_num, '$', '')
@@ -324,9 +278,8 @@ function terminator#nvim_on_event(job_id, data, event) dict
         botright cwindow
         call terminator#shrink_output_buffer()
     endif
-    if exists("l:str")
-        call appendbufline(s:output_buf_num, '$', l:str)
-    endif
+
+    call appendbufline(s:output_buf_num, '$', l:str)
 endfunction
 
 function terminator#vim_on_exit(channel, data)
@@ -353,8 +306,8 @@ function! terminator#run_file_in_output_buffer(cmd) abort
     let cmd =  ['/bin/sh', '-c', a:cmd]
     if has("nvim")
         let g:terminator_running_job = jobstart(cmd, {
-                    \ 'stdout_buffer': [],
-                    \ 'stderr_buffer': [],
+                    \ 'stdout_queue': [''],
+                    \ 'stderr_queue': [''],
                     \ 'on_stdout': function('terminator#nvim_on_event'),
                     \ 'on_stderr': function('terminator#nvim_on_event'),
                     \ 'on_exit': function('terminator#nvim_on_event'),
