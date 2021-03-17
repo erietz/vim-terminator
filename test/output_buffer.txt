@@ -1,0 +1,8 @@
+[Running] gcc /Users/ethan/git/vim-terminator/test/test.c -o /Users/ethan/git/vim-terminator/test/test && /Users/ethan/git/vim-terminator/test/test
+
+stderr: check the quickfix window
+stderr: check the quickfix window
+
+[Done] in 0.065181 seconds with code=1
+
+vim: ft=output_buffer

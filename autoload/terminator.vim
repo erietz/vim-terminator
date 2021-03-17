@@ -264,17 +264,22 @@ function terminator#nvim_on_event(job_id, data, event) dict
     elseif a:event == 'stderr'
         " [''] is returned if there are no errors
         if join(a:data) == '' | return | endif
-        let l:str = 'stderr: check the quickfix window'
+        "let l:str = 'stderr: check the quickfix window'
 
         let self.stderr_queue[-1] .= a:data[0]
         call extend(self.stderr_queue, a:data[1:])
         caddexpr self.stderr_queue[:-2]
         let self.stderr_queue = [self.stderr_queue[-1]]
+        return
 
     else
         let run_time = split(reltimestr(reltime(s:start_time)))[0]
         call appendbufline(s:output_buf_num, '$', '')
-        let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
+        if a:data == 0
+            let l:str = '[Done] in '  . run_time . ' seconds'
+        else
+            let l:str = '[Done] in '  . run_time . ' seconds with code=' . string(a:data)
+        endif
         botright cwindow
         call terminator#shrink_output_buffer()
     endif
@@ -285,7 +290,12 @@ endfunction
 function terminator#vim_on_exit(channel, data)
     let run_time = split(reltimestr(reltime(s:start_time)))[0]
     call appendbufline(s:output_buf_num, '$', '')
-    let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
+    if a:data == 0
+        let l:str = '[Done] in '  . run_time . ' seconds'
+    else
+        let l:str = '[Done] in '  . run_time . ' seconds with code=' . string(a:data)
+    endif
+    "let l:str = '[Done] exited with code=' . string(a:data) . ' in '  . run_time . ' seconds'
     call appendbufline(s:output_buf_num, '$', l:str)
     botright cwindow
     call terminator#shrink_output_buffer()
@@ -293,8 +303,8 @@ endfunction
 
 function terminator#vim_on_error(channel, data)
     if a:data == '' | return | endif
-    let l:str = 'stderr: check the quickfix window'
-    call appendbufline(s:output_buf_num, '$', l:str)
+    "let l:str = 'stderr: check the quickfix window'
+    "call appendbufline(s:output_buf_num, '$', l:str)
     caddexpr a:data
 endfunction
 
