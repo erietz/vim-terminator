@@ -31,7 +31,7 @@ let s:terminator_runfile_map = {
             \ "fsharp": "fsi",
             \ "go": "go run",
             \ "groovy": "groovy",
-            \ "haskell": "stack ghc",
+            \ "haskell": "stack runghc",
             \ "haxe": "haxe --cwd $dirWithoutTrailingSlash --run $fileNameWithoutExt",
             \ "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
             \ "javascript": "node",
