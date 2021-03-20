@@ -160,7 +160,7 @@ function terminator#get_in_delimiter()
 
     " Find delimiters: always start from search_pos := end of current line.
     " Last delimiter: search backwards (accept match at starting cursor pos).
-    let search_pos = [save_pos[0], save_pos[1], virtcol('$'), save_pos[3]]
+    let search_pos = [save_pos[0], save_pos[1], col('$'), save_pos[3]]
     call setpos('.', search_pos)
     let last_delim = search(delimiter, 'ncWb', line("0"))
     if last_delim == 0
