@@ -11,17 +11,22 @@ command! TerminatorRunFileInTerminal call terminator#run_file("terminal", expand
 command! TerminatorRunFileInOutputBuffer call terminator#run_file("output_buffer", expand("%"))
 command! TerminatorStopRun call terminator#stop_running_job()
 
-if exists("g:terminator_clear_default_mappings")
-else
+
+command! -range TerminatorSendSelectionToTerminal call terminator#send_to_terminal(terminator#get_visual_selection())
+command! TerminatorSendDelimiterToTerminal call terminator#send_delimiter_to_terminal()
+command! -range TerminatorRunPartOfFileInTerminal call terminator#run_part_of_file("terminal", terminator#get_visual_selection())
+command! -range TerminatorRunPartOfFileInOutputBuffer call terminator#run_part_of_file("output_buffer", terminator#get_visual_selection())
+
+if !exists("g:terminator_clear_default_mappings")
     nnoremap <silent> <leader>ot :TerminatorOpenTerminal <CR>
     nnoremap <silent> <leader>or :TerminatorStartREPL <CR>
     nnoremap <silent> <leader>rt :TerminatorRunFileInTerminal <CR>
     nnoremap <silent> <leader>rf :TerminatorRunFileInOutputBuffer <CR>
     nnoremap <silent> <leader>rs :TerminatorStopRun <CR>
 
-    nnoremap <silent> <leader>sd :call terminator#send_delimiter_to_terminal()<CR>
-    vnoremap <silent> <leader>ss :<C-U> call terminator#send_to_terminal(terminator#get_visual_selection())<CR>
+    nnoremap <silent> <leader>sd :TerminatorSendDelimiterToTerminal<CR>
+    vnoremap <silent> <leader>ss :TerminatorSendSelectionToTerminal<CR>
 
-    vnoremap <silent> <leader>rf :<C-U> call terminator#run_part_of_file("output_buffer", terminator#get_visual_selection())<CR>
-    vnoremap <silent> <leader>rt :<C-U> call terminator#run_part_of_file("terminal", terminator#get_visual_selection())<CR>
+    vnoremap <silent> <leader>rf :TerminatorRunPartOfFileInOutputBuffer<CR>
+    vnoremap <silent> <leader>rt :TerminatorRunPartOfFileInTerminal<CR>
 endif
