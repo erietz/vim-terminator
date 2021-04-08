@@ -5,5 +5,7 @@ int main() {
         printf("hello from c %d\n", i);
     }
 
+    printf("line that doesn't end in a newline character");
+
     return 0;
 }
