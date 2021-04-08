@@ -143,7 +143,8 @@ function terminator#start_repl() abort
     let cmd = get(s:terminator_repl_command, &ft, 'language_not_found')
     if cmd == 'language_not_found' | echo 'language not in repl dictionary' | return | endif
     call terminator#open_terminal()
-    let cmd = terminator#substitute_command_variables(cmd, expand("%"))
+    let filename = fnameescape(expand("%)"))
+    let cmd = terminator#substitute_command_variables(cmd, filename)
     call terminator#send_to_terminal(cmd . "\n")
 endfunction
 
@@ -335,9 +336,10 @@ function terminator#run_file(output_location, filename) abort
     if stridx(cmd, "fileName") == -1
         let needs_filename_at_end = 1
     endif
-    let cmd = terminator#substitute_command_variables(cmd, a:filename)
+    let filename = fnameescape(a:filename)
+    let cmd = terminator#substitute_command_variables(cmd, filename)
     if exists("needs_filename_at_end")
-        let cmd = cmd . ' ' . fnamemodify(a:filename, ":p")
+        let cmd = cmd . ' ' . fnamemodify(filename, ":p")
     endif
     if a:output_location == "terminal"
         call terminator#send_to_terminal(cmd . "\n")
@@ -357,7 +359,8 @@ function terminator#stop_running_job()
 endfunction
 
 function terminator#run_part_of_file(output_location, register) abort
-    let l:tmpfile = tempname() . "." . expand("%:e")
+    let filename = fnamemodify(fnameescape(expand("%")), ":e")
+    let l:tmpfile = tempname() . "." . filename
     call writefile(split(a:register, '\n'), fnameescape(l:tmpfile))
     call terminator#run_file(a:output_location, fnameescape(l:tmpfile))
 endfunction
