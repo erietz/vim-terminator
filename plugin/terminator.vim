@@ -10,6 +10,7 @@ command! -nargs=+ TerminatorSendToTerminal call terminator#send_to_terminal(<q-a
 command! TerminatorRunFileInTerminal call terminator#run_file("terminal", expand("%"))
 command! TerminatorRunFileInOutputBuffer call terminator#run_file("output_buffer", expand("%"))
 command! TerminatorStopRun call terminator#stop_running_job()
+command! -nargs=+ TerminatorAlternateOutputBufferCommand call terminator#run_file_in_output_buffer(<q-args>)
 
 
 command! -range TerminatorSendSelectionToTerminal call terminator#send_to_terminal(terminator#get_visual_selection())
@@ -23,6 +24,7 @@ if !exists("g:terminator_clear_default_mappings")
     nnoremap <silent> <leader>rt :TerminatorRunFileInTerminal <CR>
     nnoremap <silent> <leader>rf :TerminatorRunFileInOutputBuffer <CR>
     nnoremap <silent> <leader>rs :TerminatorStopRun <CR>
+    nnoremap <leader>rm :TerminatorAlternateOutputBufferCommand <C-R>=terminator#get_run_cmd(expand("%"))<CR>
 
     nnoremap <silent> <leader>sd :TerminatorSendDelimiterToTerminal<CR>
     vnoremap <silent> <leader>ss :TerminatorSendSelectionToTerminal<CR>
