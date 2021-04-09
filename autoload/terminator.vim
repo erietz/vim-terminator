@@ -275,7 +275,10 @@ function terminator#nvim_on_event(job_id, data, event) dict
 
     else
         let run_time = split(reltimestr(reltime(s:start_time)))[0]
-        call appendbufline(s:output_buf_num, '$', self.stdout_queue[-1])
+        let end_of_queue = self.stdout_queue[-1]
+        if end_of_queue != ''
+            call appendbufline(s:output_buf_num, '$', end_of_queue)
+        endif
         call appendbufline(s:output_buf_num, '$', '')
         if a:data == 0
             let l:str = '[Done] in '  . run_time . ' seconds'
