@@ -93,6 +93,21 @@ endif
 
 let s:terminator_terminal_buffer_name_regex = '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
 
+" used in plugin/terminator.vim
+function terminator#get_run_cmd(filename)
+    let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
+    if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
+    if stridx(cmd, "fileName") == -1
+        let needs_filename_at_end = 1
+    endif
+    let cmd = terminator#substitute_command_variables(cmd, a:filename)
+    if exists("needs_filename_at_end")
+        let cmd = cmd . ' ' . fnamemodify(a:filename, ":p")
+    endif
+    return cmd
+endfunction
+
+
 function terminator#resize_window()
     if stridx(s:terminator_split_location, "vertical") == -1
         execute printf('resize %s', string(&lines * s:terminator_split_fraction))
@@ -335,16 +350,7 @@ function! terminator#run_file_in_output_buffer(cmd) abort
 endfunction
 
 function terminator#run_file(output_location, filename) abort
-    let cmd = get(s:terminator_runfile_map, &ft, 'language_not_found')
-    if cmd == 'language_not_found' | echo 'language not in run dictionary' | return | endif
-    if stridx(cmd, "fileName") == -1
-        let needs_filename_at_end = 1
-    endif
-    let filename = fnameescape(a:filename)
-    let cmd = terminator#substitute_command_variables(cmd, filename)
-    if exists("needs_filename_at_end")
-        let cmd = cmd . ' ' . fnamemodify(filename, ":p")
-    endif
+    let cmd = terminator#get_run_cmd(a:filename)
     if a:output_location == "terminal"
         call terminator#send_to_terminal(cmd . "\n")
     elseif a:output_location == "output_buffer"
