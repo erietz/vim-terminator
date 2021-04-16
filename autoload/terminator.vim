@@ -4,6 +4,9 @@ endif
 
 let g:terminator_autoloaded = 1
 
+let s:has_windows = has('win32') || has('win64')
+let s:has_nvim = has('nvim')
+
 let s:terminator_repl_command = {
   \'python' : 'ipython --no-autoindent',
   \'javascript': 'node',
@@ -123,7 +126,7 @@ function terminator#open_terminal() abort
         call terminator#resize_window()
         wincmd p
     else
-        if has('nvim')
+        if s:has_nvim
             execute printf('%s split | terminal', s:terminator_split_location)
             call terminator#resize_window()
             let s:terminator_job_id = b:terminal_job_id
@@ -146,7 +149,7 @@ function terminator#send_to_terminal(contents) abort
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
         call terminator#open_terminal()
     else
-        if has('nvim')
+        if s:has_nvim
             call chansend(s:terminator_job_id, a:contents)
         else
             call term_sendkeys(s:terminator_terminal_buffer_number, a:contents)
@@ -330,8 +333,12 @@ function! terminator#run_file_in_output_buffer(cmd) abort
     botright cwindow
     let s:output_buf_num = terminator#get_output_buffer(a:cmd)
     let s:start_time = reltime()
-    let cmd =  ['/bin/sh', '-c', a:cmd]
-    if has("nvim")
+    if s:has_windows
+        let cmd =  a:cmd
+    else
+        let cmd =  ['/bin/sh', '-c', a:cmd]
+    endif
+    if s:has_nvim
         let g:terminator_running_job = jobstart(cmd, {
                     \ 'stdout_queue': [''],
                     \ 'stderr_queue': [''],
@@ -361,7 +368,7 @@ function terminator#run_file(output_location, filename) abort
 endfunction
 
 function terminator#stop_running_job()
-    if has('nvim')
+    if s:has_nvim
         call jobstop(g:terminator_running_job)
     else
         call job_stop(g:terminator_running_job)
