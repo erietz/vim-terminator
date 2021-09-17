@@ -1,0 +1,20 @@
+
+Execute (Get the output):
+  edit test/manual/test.py
+  TerminatorRunFileInOutputBuffer
+  sleep 1
+  let lines = getbufline(bufnr("OUTPUT_BUFFER"), 1, "$")
+  let expected =<< trim END
+    [Running] python -u /home/ethan/git/vim-terminator/test/manual/test.py
+
+    hello world
+
+    [Done] in 0.038504 seconds
+  END
+
+  " Verify up to the last line in the output buffer
+  AssertEqual lines[:-2], expected[:-2]
+
+  " Verify last line seperately because time of execution varies
+  AssertEqual lines[-1][0:9], "[Done] in "
+  AssertEqual lines[-1][19:], "seconds"
