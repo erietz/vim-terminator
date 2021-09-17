@@ -1,0 +1,26 @@
+# Test case
+
+Execute (verify run command for python file type):
+  set filetype=python
+  let this_file = expand("%")
+  let actual = terminator#get_run_cmd(this_file)
+  let expected = 'python -u ' .. fnamemodify(this_file, ":p")   " absolute path
+  " python -u /home/ethan/git/vim-terminator/[Vader-workbench]
+  AssertEqual actual, expected
+
+Execute (verify run command for C file type):
+  set filetype=c
+  let filename = expand("%")
+  let filename_absolute = fnamemodify(filename, ":p")
+  let actual = terminator#get_run_cmd(filename)
+  let expected = 'gcc '..filename_absolute.." -o "..filename_absolute.." && "..filename_absolute
+  " gcc /home/ethan/git/vim-terminator/test/manual/test.c -o /home/ethan/git/vim-terminator/test/manual/test && /home/ethan/git/vim-terminator/test/manual/te>
+  AssertEqual actual, expected
+
+Execute (verify run command for javascript file type):
+  set filetype=javascript
+  let this_file = expand("%")
+  let actual = terminator#get_run_cmd(this_file)
+  let expected = 'node ' .. fnamemodify(this_file, ":p")   " absolute path
+  " node /home/ethan/git/vim-terminator/[Vader-workbench]
+  AssertEqual actual, expected
