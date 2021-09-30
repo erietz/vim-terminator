@@ -32,6 +32,7 @@ let s:terminator_runfile_map = {
             \ "dart": "dart",
             \ "fortran": "cd $dir && gfortran $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
             \ "fsharp": "fsi",
+            \ "gnuplot": "gnuplot -p",
             \ "go": "go run",
             \ "groovy": "groovy",
             \ "haskell": "stack runghc",
