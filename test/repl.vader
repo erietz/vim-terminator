@@ -1,0 +1,39 @@
+
+Execute (verify comment string for python file type):
+  set filetype=python
+  let comment_string = terminator#get_filetype_comment()
+  AssertEqual comment_string, ['# ', '']
+
+Execute (verify comment string for c file type):
+  set filetype=c
+  let comment_string = terminator#get_filetype_comment()
+  AssertEqual comment_string, ['/* ', ' */']
+
+Execute (verify comment string for javascript file type):
+  set filetype=javascript
+  let comment_string = terminator#get_filetype_comment()
+  AssertEqual comment_string, ['// ', '']
+
+
+Given python (Lines of text representing a jupyter notebook cell):
+  # In[1]:
+  print("test")
+  # In[2]:
+
+Execute (verify get_in_delimiter() gets text between delimiters):
+  let lines = terminator#get_in_delimiter()
+  let expected = "print(\"test\")\n"
+  AssertEqual lines, expected
+
+
+Given python (Lines of text representing a jupyter notebook cell with blank lines):
+  # In[1]:
+
+  print("test")
+
+  # In[2]:
+
+Execute (verify get_in_delimiter() gets text and strips empty lines):
+  let lines = terminator#get_in_delimiter()
+  let expected = "print(\"test\")\n"
+  AssertEqual lines, expected
