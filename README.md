@@ -45,7 +45,13 @@ Automatic window resizing
 If you use [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-plug 'erietz/vim-terminator'
+plug 'erietz/vim-terminator', { 'branch': 'main'}
+```
+
+If you use [packer](https://github.com/wbthomason/packer.nvim)
+
+```lua
+use 'erietz/vim-terminator'
 ```
 
 *Note:* This plugin requires neovim or vim version >= 8.0
