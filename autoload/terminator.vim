@@ -175,7 +175,11 @@ endfunction
 
 function terminator#get_in_delimiter()
     let [l, r] = terminator#get_filetype_comment()
-    let delimiter = l . s:terminator_repl_delimiter_regex . r
+    " l and r may contains characters, such as '*' that need escaped when
+    " interpretted as a regex. For example, a comment like: /* foo bar */.
+    " Here we 'escape' l and r my using \M to make interpret them as nomagic
+    " and return the rest of the string to magic using \m
+    let delimiter = '\M' . l . '\m' . s:terminator_repl_delimiter_regex . '\M' . r
     let save_pos = getpos(".")
 
     " Find delimiters: always start from search_pos := end of current line.
