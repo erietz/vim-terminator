@@ -1,11 +1,11 @@
 
 Execute (Get the output):
-  edit test/manual/test.py
+  edit test/test_inputs/test.py
   TerminatorRunFileInOutputBuffer
   sleep 1
   let lines = getbufline(bufnr("OUTPUT_BUFFER"), 1, "$")
   let expected =<< trim END
-    [Running] python -u /home/ethan/git/vim-terminator/test/manual/test.py
+    [Running] python -u /home/ethan/git/vim-terminator/test/test_inputs/test.py
 
     hello world
 

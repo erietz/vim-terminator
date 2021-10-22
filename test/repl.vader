@@ -37,3 +37,15 @@ Execute (verify get_in_delimiter() gets text and strips empty lines):
   let lines = terminator#get_in_delimiter()
   let expected = "print(\"test\")\n"
   AssertEqual lines, expected
+
+Given sql (Lines of sql that might be sent to mysql repl):
+  /* In[1]: */
+
+  show databases;
+
+  /* In[2]: */
+
+Execute (verify get_in_delimiter() works for comments needed regex escaping):
+  let lines = terminator#get_in_delimiter()
+  let expected = "show databases;\n"
+  AssertEqual lines, expected

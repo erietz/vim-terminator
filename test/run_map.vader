@@ -24,3 +24,10 @@ Execute (verify run command for javascript file type):
   let expected = 'node ' .. fnamemodify(this_file, ":p")   " absolute path
   " node /home/ethan/git/vim-terminator/[Vader-workbench]
   AssertEqual actual, expected
+
+Execute (verify run command for file name with space):
+  edit test_inputs/file\ with\ spaces.py
+  let this_file = expand("%")
+  let actual = terminator#get_run_cmd(this_file)
+  let expected = 'python -u ' .. fnamemodify(this_file, ":h") .. "file with spaces.py"
+  AssertEqual actual, expected
