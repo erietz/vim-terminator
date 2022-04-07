@@ -20,18 +20,6 @@ else
     let s:terminator_repl_delimiter_regex = 'In\[.*\]:'
 endif
 
-if exists("g:terminator_split_location")
-    let s:terminator_split_location = g:terminator_split_location
-else
-    let s:terminator_split_location = 'botright'
-endif
-
-if exists("g:terminator_split_fraction")
-    let s:terminator_split_fraction = g:terminator_split_fraction
-else
-    let s:terminator_split_fraction = 0.3819660113000001
-endif
-
 let s:terminator_terminal_buffer_name_regex = '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
 
 " used in plugin/terminator.vim
@@ -49,43 +37,13 @@ function terminator#get_run_cmd(filename)
 endfunction
 
 
-function terminator#resize_window()
-    if stridx(s:terminator_split_location, "vertical") == -1
-        execute printf('resize %s', string(&lines * s:terminator_split_fraction))
-    else
-        execute printf('vertical resize %s', string(&columns * s:terminator_split_fraction))
-    endif
-endfunction
-
-function terminator#open_terminal() abort
-    if exists("s:terminator_terminal_buffer_number") && bufname(s:terminator_terminal_buffer_number) =~# s:terminator_terminal_buffer_name_regex
-        let buf_name = bufname(s:terminator_terminal_buffer_number)
-        execute printf('%s split %s', s:terminator_split_location, buf_name)
-        call terminator#resize_window()
-        wincmd p
-    else
-        if s:has_nvim
-            execute printf('%s split | terminal', s:terminator_split_location)
-            call terminator#resize_window()
-            let s:terminator_job_id = b:terminal_job_id
-            set winfixheight winfixwidth
-        else
-            execute printf('%s terminal', s:terminator_split_location)
-            call terminator#resize_window()
-            set winfixheight winfixwidth
-        endif
-        let s:terminator_terminal_buffer_number = bufnr("%")
-        wincmd p
-    endif
-endfunction
-
 function terminator#send_to_terminal(contents) abort
     if !(exists("s:terminator_terminal_buffer_number")) 
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
-        call terminator#open_terminal()
+        call terminator#window#open_terminal()
     elseif bufname(s:terminator_terminal_buffer_number) !~# s:terminator_terminal_buffer_name_regex
         echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
-        call terminator#open_terminal()
+        call terminator#window#open_terminal()
     else
         if s:has_nvim
             call chansend(s:terminator_job_id, a:contents)
@@ -98,7 +56,7 @@ endfunction
 function terminator#start_repl() abort
     let cmd = get(s:terminator_repl_command, &ft, 'language_not_found')
     if cmd == 'language_not_found' | echo 'language not in repl dictionary' | return | endif
-    call terminator#open_terminal()
+    call terminator#window#open_terminal()
     let filename = fnameescape(expand("%)"))
     let cmd = terminator#substitute_command_variables(cmd, filename)
     call terminator#send_to_terminal(cmd . "\n")
@@ -184,27 +142,17 @@ function terminator#substitute_command_variables(command, filename)
     return cmd
 endfunction
 
-function terminator#open_new_output_buffer()
-    let error_format = &errorformat
-    execute printf('%s split OUTPUT_BUFFER', s:terminator_split_location)
-    call terminator#resize_window()
-    setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell nonumber norelativenumber winfixheight winfixwidth
-    let &errorformat=error_format
-    let buf_num = bufnr('%')
-    return buf_num
-endfunction
-
 function terminator#get_output_buffer(cmd) abort
     let first_line = '[Running] ' . a:cmd
     let buf_num = bufnr('OUTPUT_BUFFER')
     if buf_num == -1
-        let buf_num = terminator#open_new_output_buffer()
+        let buf_num = terminator#window#open_new_output_buffer()
         call setline(1, first_line)
         call setline(2, '')
         wincmd p
     else
         if bufwinid('OUTPUT_BUFFER') == -1
-            call terminator#open_new_output_buffer()
+            call terminator#window#open_new_output_buffer()
             wincmd p
         endif
         let buf_name = bufname(buf_num)
@@ -246,7 +194,7 @@ function terminator#nvim_on_event(job_id, data, event) dict
             let l:str = '[Done] in '  . run_time . ' seconds with code=' . string(a:data)
         endif
         botright cwindow
-        call terminator#shrink_output_buffer()
+        call terminator#window#shrink_output_buffer()
     endif
 
     call appendbufline(s:output_buf_num, '$', l:str)
@@ -262,7 +210,7 @@ function terminator#vim_on_exit(channel, data)
     endif
     call appendbufline(s:output_buf_num, '$', l:str)
     botright cwindow
-    call terminator#shrink_output_buffer()
+    call terminator#window#shrink_output_buffer()
 endfunction
 
 function terminator#vim_on_error(channel, data)
@@ -324,23 +272,3 @@ function terminator#run_part_of_file(output_location, register) abort
     call terminator#run_file(a:output_location, fnameescape(l:tmpfile))
 endfunction
 
-function terminator#shrink_output_buffer()
-    if !exists('g:terminator_auto_shrink_output') || (stridx(s:terminator_split_location, 'vert') != -1)
-        return
-    endif
-    for i in range(1, winnr('$'))
-        if bufname(winbufnr(i)) == 'OUTPUT_BUFFER'
-            let win_num = i
-        endif
-    endfor
-    execute win_num . 'wincmd w'
-    let size1 = &lines * s:terminator_split_fraction
-    let size2 = line('$') + 1
-    if size2 > size1
-        let new_size = size1
-    else
-        let new_size = size2
-    endif
-    execute 'resize ' . string(new_size)
-    wincmd p
-endfunction

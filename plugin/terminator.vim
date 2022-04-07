@@ -4,7 +4,7 @@ endif
 
 let g:terminator_loaded = 1
 
-command! TerminatorOpenTerminal call terminator#open_terminal()
+command! TerminatorOpenTerminal call terminator#window#open_terminal()
 command! TerminatorStartREPL call terminator#start_repl()
 command! -nargs=+ TerminatorSendToTerminal call terminator#send_to_terminal(<q-args> . "\n")
 command! TerminatorRunFileInTerminal call terminator#run_file("terminal", expand("%"))
