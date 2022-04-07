@@ -3,6 +3,9 @@ if exists("g:autoloaded_terminator_window")
 endif
 let g:autoloaded_terminator_window = 1
 
+let s:has_nvim = has('nvim')
+let s:terminator_terminal_buffer_name_regex = '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
+
 if exists("g:terminator_split_location")
     let s:terminator_split_location = g:terminator_split_location
 else
@@ -26,11 +29,48 @@ function terminator#window#open_new_output_buffer()
     return buf_num
 endfunction
 
+function terminator#window#get_output_buffer(cmd) abort
+    let first_line = '[Running] ' . a:cmd
+    let buf_num = bufnr('OUTPUT_BUFFER')
+    if buf_num == -1
+        let buf_num = terminator#window#open_new_output_buffer()
+        call setline(1, first_line)
+        call setline(2, '')
+        wincmd p
+    else
+        if bufwinid('OUTPUT_BUFFER') == -1
+            call terminator#window#open_new_output_buffer()
+            wincmd p
+        endif
+        let buf_name = bufname(buf_num)
+        silent call deletebufline(buf_name, 1, '$')
+        call setbufline(buf_name, 1, first_line)
+        call setbufline(buf_name, 2, '')
+    endif
+    return buf_num
+endfunction
+
 function terminator#window#resize_window()
     if stridx(s:terminator_split_location, "vertical") == -1
         execute printf('resize %s', string(&lines * s:terminator_split_fraction))
     else
         execute printf('vertical resize %s', string(&columns * s:terminator_split_fraction))
+    endif
+endfunction
+
+function terminator#window#send_to_terminal(contents) abort
+    if !(exists("s:terminator_terminal_buffer_number")) 
+        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
+        call terminator#window#open_terminal()
+    elseif bufname(s:terminator_terminal_buffer_number) !~# s:terminator_terminal_buffer_name_regex
+        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
+        call terminator#window#open_terminal()
+    else
+        if s:has_nvim
+            call chansend(s:terminator_job_id, a:contents)
+        else
+            call term_sendkeys(s:terminator_terminal_buffer_number, a:contents)
+        endif
     endif
 endfunction
 
