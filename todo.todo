@@ -1,0 +1,5 @@
+- do not automatically add filename at end if not included (explicit is better)
+- include an absolute filename path instead of combining dir and filename
+- filenames with spaces
+- dirname with spaces
+- figure out a change log
