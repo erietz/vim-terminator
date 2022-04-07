@@ -1,0 +1,66 @@
+if exists("g:autoloaded_terminator_language_maps")
+    finish
+endif
+let g:autoloaded_terminator_language_maps = 1
+
+let terminator#language_maps#repl_command = {
+    \ "python" : "ipython --no-autoindent",
+    \ "javascript": "node",
+    \ "lua": "lua",
+    \ "ruby": "irb",
+    \ "haskell": "stack ghci",
+    \ }
+
+" this dictionary was extracted out of json from the vscode extension
+" code-runner and modified
+let terminator#language_maps#runfile_map = {
+    \ "ahk": "autohotkey",
+    \ "applescript": "osascript",
+    \ "autoit": "autoit3",
+    \ "bat": "cmd /c",
+    \ "c": "gcc $dir$fileName -o $dir$fileNameWithoutExt && $dir$fileNameWithoutExt",
+    \ "clojure": "lein exec",
+    \ "coffeescript": "coffee",
+    \ "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
+    \ "crystal": "crystal",
+    \ "csharp": "scriptcs",
+    \ "d": "cd $dir && dmd $fileName && $dir$fileNameWithoutExt",
+    \ "dart": "dart",
+    \ "fortran": "cd $dir && gfortran $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
+    \ "fsharp": "fsi",
+    \ "gnuplot": "gnuplot -p",
+    \ "go": "go run",
+    \ "groovy": "groovy",
+    \ "haskell": "stack runghc",
+    \ "haxe": "haxe --cwd $dirWithoutTrailingSlash --run $fileNameWithoutExt",
+    \ "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
+    \ "javascript": "node",
+    \ "julia": "julia",
+    \ "kit": "kitc --run",
+    \ "less": "cd $dir && lessc $fileName $fileNameWithoutExt.css",
+    \ "lisp": "sbcl --script",
+    \ "lua": "lua",
+    \ "nim": "nim compile --verbosity:0 --hints:off --run",
+    \ "objective-c": "cd $dir && gcc -framework Cocoa $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
+    \ "ocaml": "ocaml",
+    \ "pascal": "cd $dir && fpc $fileName && $dir$fileNameWithoutExt",
+    \ "perl": "perl",
+    \ "perl6": "perl6",
+    \ "php": "php",
+    \ "powershell": "powershell -ExecutionPolicy ByPass -File",
+    \ "python": "python -u",
+    \ "r": "Rscript",
+    \ "racket": "racket",
+    \ "ruby": "ruby",
+    \ "rust": "cd $dir && rustc $fileName && $dir$fileNameWithoutExt",
+    \ "sass": "sass --style expanded",
+    \ "scala": "scala",
+    \ "scheme": "csi -script",
+    \ "scss": "scss --style expanded",
+    \ "sh": "sh",
+    \ "swift": "swift",
+    \ "typescript": "ts-node",
+    \ "v": "v run",
+    \ "vbscript": "cscript //Nologo",
+    \ "zsh": "zsh",
+    \ }
