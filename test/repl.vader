@@ -1,17 +1,17 @@
 
 Execute (verify comment string for python file type):
   set filetype=python
-  let comment_string = terminator#get_filetype_comment()
+  let comment_string = terminator#util#get_filetype_comment()
   AssertEqual comment_string, ['# ', '']
 
 Execute (verify comment string for c file type):
   set filetype=c
-  let comment_string = terminator#get_filetype_comment()
+  let comment_string = terminator#util#get_filetype_comment()
   AssertEqual comment_string, ['/* ', ' */']
 
 Execute (verify comment string for javascript file type):
   set filetype=javascript
-  let comment_string = terminator#get_filetype_comment()
+  let comment_string = terminator#util#get_filetype_comment()
   AssertEqual comment_string, ['// ', '']
 
 
@@ -21,7 +21,7 @@ Given python (Lines of text representing a jupyter notebook cell):
   # In[2]:
 
 Execute (verify get_in_delimiter() gets text between delimiters):
-  let lines = terminator#get_in_delimiter()
+  let lines = terminator#util#get_in_delimiter()
   let expected = "print(\"test\")\n"
   AssertEqual lines, expected
 
@@ -34,7 +34,7 @@ Given python (Lines of text representing a jupyter notebook cell with blank line
   # In[2]:
 
 Execute (verify get_in_delimiter() gets text and strips empty lines):
-  let lines = terminator#get_in_delimiter()
+  let lines = terminator#util#get_in_delimiter()
   let expected = "print(\"test\")\n"
   AssertEqual lines, expected
 
@@ -46,6 +46,6 @@ Given sql (Lines of sql that might be sent to mysql repl):
   /* In[2]: */
 
 Execute (verify get_in_delimiter() works for comments needed regex escaping):
-  let lines = terminator#get_in_delimiter()
+  let lines = terminator#util#get_in_delimiter()
   let expected = "show databases;\n"
   AssertEqual lines, expected
