@@ -90,29 +90,11 @@ function terminator#jobs#vim_on_error(channel, data)
 endfunction
 
 
-function terminator#jobs#run_file(output_location, filename) abort
-    let cmd = terminator#get_run_cmd(a:filename)
-    if a:output_location == "terminal"
-        call terminator#window#send_to_terminal(cmd . "\n")
-    elseif a:output_location == "output_buffer"
-        call terminator#jobs#run_file_in_output_buffer(cmd)
-    else
-        echo "invalid option for this function"
-    end
-endfunction
-
 function terminator#jobs#stop_running_job()
     if s:has_nvim
         call jobstop(g:terminator_running_job)
     else
         call job_stop(g:terminator_running_job)
     endif
-endfunction
-
-function terminator#jobs#run_part_of_file(output_location, register) abort
-    let filename = fnamemodify(fnameescape(expand("%")), ":e")
-    let l:tmpfile = tempname() . "." . filename
-    call writefile(split(a:register, '\n'), fnameescape(l:tmpfile))
-    call terminator#jobs#run_file(a:output_location, fnameescape(l:tmpfile))
 endfunction
 

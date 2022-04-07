@@ -76,3 +76,16 @@ function terminator#util#send_delimiter_to_terminal()
     endif
 endfunction
 
+function terminator#util#substitute_command_variables(command, filename)
+    let cmd = a:command
+    let dir = fnamemodify(a:filename, ":p:h") . "/"
+    let fileName = fnamemodify(a:filename, ":t")
+    let fileNameWithoutExt = fnamemodify(a:filename, ":t:r")
+    let dirWithoutTrailingSlash = fnamemodify(a:filename, ":h")
+    let cmd = substitute(cmd, "\$dir", dir, "g")
+    let cmd = substitute(cmd, "\$fileName ", fileName . " ", "g")
+    let cmd = substitute(cmd, "\$fileNameWithoutExt", fileNameWithoutExt, "g")
+    let cmd = substitute(cmd, "\$dirWithoutTrailingSlash", dirWithoutTrailingSlash, "g")
+    return cmd
+endfunction
+
