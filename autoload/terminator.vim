@@ -5,10 +5,14 @@ let g:autoloaded_terminator = 1
 
 if exists("g:terminator_repl_command")
     let s:terminator_repl_command = extend(terminator#language_maps#repl_command, g:terminator_repl_command)
+else
+    let s:terminator_repl_command = terminator#language_maps#repl_command
 endif
 
 if exists("g:terminator_runfile_map")
     let s:terminator_runfile_map = extend(terminator#language_maps#runfile_map, g:terminator_runfile_map)
+else
+    let s:terminator_runfile_map = terminator#language_maps#runfile_map
 endif
 
 " used in plugin/terminator.vim
