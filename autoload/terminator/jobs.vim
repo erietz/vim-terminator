@@ -9,7 +9,7 @@ let s:has_nvim = has('nvim')
 function! terminator#jobs#run_file_in_output_buffer(cmd) abort
     cexpr ''
     botright cwindow
-    let s:output_buf_num = terminator#window#get_output_buffer(a:cmd)
+    let s:output_buf_num = terminator#window#output_buffer_prepare(a:cmd)
     let s:start_time = reltime()
     if s:has_windows
         let cmd =  a:cmd
@@ -62,10 +62,14 @@ function terminator#jobs#nvim_on_event(job_id, data, event) dict
         if a:data == 0
             let l:str = '[Done] in '  . run_time . ' seconds'
         else
+            call terminator#window#output_buffer_close()
             let l:str = '[Done] in '  . run_time . ' seconds with code=' . string(a:data)
         endif
         botright cwindow
-        call terminator#window#shrink_output_buffer()
+        " call terminator#window#output_buffer_shrink()
+        if a:data != 0
+            copen
+        endif
     endif
 
     call appendbufline(s:output_buf_num, '$', l:str)
@@ -81,7 +85,7 @@ function terminator#jobs#vim_on_exit(channel, data)
     endif
     call appendbufline(s:output_buf_num, '$', l:str)
     botright cwindow
-    call terminator#window#shrink_output_buffer()
+    call terminator#window#output_buffer_shrink()
 endfunction
 
 function terminator#jobs#vim_on_error(channel, data)
