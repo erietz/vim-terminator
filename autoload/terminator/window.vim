@@ -19,7 +19,7 @@ else
 endif
 
 
-function terminator#window#open_new_output_buffer()
+function terminator#window#output_buffer_new()
     let error_format = &errorformat
     execute printf('%s split OUTPUT_BUFFER', s:terminator_split_location)
     call terminator#window#resize_window()
@@ -29,17 +29,17 @@ function terminator#window#open_new_output_buffer()
     return buf_num
 endfunction
 
-function terminator#window#get_output_buffer(cmd) abort
+function terminator#window#output_buffer_prepare(cmd) abort
     let first_line = '[Running] ' . a:cmd
     let buf_num = bufnr('OUTPUT_BUFFER')
     if buf_num == -1
-        let buf_num = terminator#window#open_new_output_buffer()
+        let buf_num = terminator#window#output_buffer_new()
         call setline(1, first_line)
         call setline(2, '')
         wincmd p
     else
         if bufwinid('OUTPUT_BUFFER') == -1
-            call terminator#window#open_new_output_buffer()
+            call terminator#window#output_buffer_new()
             wincmd p
         endif
         let buf_name = bufname(buf_num)
@@ -96,15 +96,37 @@ function terminator#window#open_terminal() abort
     endif
 endfunction
 
-function terminator#window#shrink_output_buffer()
+function terminator#window#output_buffer_get_winnum()
+    for i in range(1, winnr('$'))
+        if bufname(winbufnr(i)) == 'OUTPUT_BUFFER'
+            return i
+        endif
+    endfor
+    return -1
+endfunction
+
+function terminator#window#output_buffer_close()
+    execute printf('%s close', terminator#window#output_buffer_get_winnum())
+endfunction
+
+function terminator#window#output_buffer_toggle()
+    let buf_num = bufnr("OUTPUT_BUFFER")
+    if buf_num == -1 | return | endif
+    let win_num = terminator#window#output_buffer_get_winnum()
+
+    if win_num > -1
+        call terminator#window#output_buffer_close()
+    else
+        execute s:terminator_split_location . ' sbuffer ' . buf_num
+        call terminator#window#resize_window()
+    endif
+endfunction
+
+function terminator#window#output_buffer_shrink()
     if !exists('g:terminator_auto_shrink_output') || (stridx(s:terminator_split_location, 'vert') != -1)
         return
     endif
-    for i in range(1, winnr('$'))
-        if bufname(winbufnr(i)) == 'OUTPUT_BUFFER'
-            let win_num = i
-        endif
-    endfor
+    let win_num = terminator#window#output_buffer_get_winnum()
     execute win_num . 'wincmd w'
     let size1 = &lines * s:terminator_split_fraction
     let size2 = line('$') + 1
