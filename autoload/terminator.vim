@@ -26,6 +26,7 @@ function terminator#get_run_cmd(filename)
 endfunction
 
 function terminator#run_file(output_location, filename) abort
+    update
     let cmd = terminator#get_run_cmd(a:filename)
     if a:output_location == "terminal"
         call terminator#window#send_to_terminal(cmd . "\n")
