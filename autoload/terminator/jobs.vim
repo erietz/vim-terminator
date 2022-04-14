@@ -63,13 +63,16 @@ function terminator#jobs#nvim_on_event(job_id, data, event) dict
             let l:str = '[Done] in '  . run_time . ' seconds'
             call terminator#window#output_buffer_shrink()
         else
-            call terminator#window#output_buffer_close()
+            copen
             let l:str = '[Done] in '  . run_time . ' seconds with code=' . string(a:data)
         endif
+        call appendbufline(s:output_buf_num, '$', l:str)
         botright cwindow
-        if a:data != 0
-            copen
+        " close the output buffer if nothing added to it
+        if getbufline(s:output_buf_num, 4)[0] =~ '\[Done\] in \d.*'
+            call terminator#window#output_buffer_close()
         endif
+        return
     endif
 
     call appendbufline(s:output_buf_num, '$', l:str)
@@ -82,13 +85,14 @@ function terminator#jobs#vim_on_exit(channel, data)
         let l:str = '[Done] in '  . run_time . ' seconds'
         call terminator#window#output_buffer_shrink()
     else
-        call terminator#window#output_buffer_close()
         let l:str = '[Done] in '  . run_time . ' seconds with code=' . string(a:data)
+        copen
     endif
     call appendbufline(s:output_buf_num, '$', l:str)
     botright cwindow
-    if a:data != 0
-        copen
+    " close the output buffer if nothing added to it
+    if getbufline(s:output_buf_num, 4)[0] =~ '\[Done\] in \d.*'
+        call terminator#window#output_buffer_close()
     endif
 endfunction
 
