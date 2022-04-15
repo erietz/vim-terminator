@@ -3,10 +3,12 @@ if exists("g:autoloaded_terminator_jobs")
 endif
 let g:autoloaded_terminator_jobs = 1
 
+let s:terminator_running_job_nvim = -2   " -2 indicates no jobs are running
 let s:has_windows = has('win32') || has('win64')
 let s:has_nvim = has('nvim')
 
 function! terminator#jobs#run_file_in_output_buffer(cmd) abort
+    call terminator#jobs#stop_running_job()
     cexpr ''
     botright cwindow
     let s:output_buf_num = terminator#window#output_buffer_prepare(a:cmd)
@@ -17,7 +19,7 @@ function! terminator#jobs#run_file_in_output_buffer(cmd) abort
         let cmd =  ['/bin/sh', '-c', a:cmd]
     endif
     if s:has_nvim
-        let g:terminator_running_job = jobstart(cmd, {
+        let s:terminator_running_job_nvim = jobstart(cmd, {
                     \ 'stdout_queue': [''],
                     \ 'stderr_queue': [''],
                     \ 'on_stdout': function('terminator#jobs#nvim_on_event'),
@@ -25,7 +27,7 @@ function! terminator#jobs#run_file_in_output_buffer(cmd) abort
                     \ 'on_exit': function('terminator#jobs#nvim_on_event'),
                     \ })
     else
-        let g:terminator_running_job = job_start(cmd, {
+        let s:terminator_running_job_vim = job_start(cmd, {
                     \ 'out_io': "buffer",
                     \ 'out_buf': s:output_buf_num,
                     \ 'err_cb': function('terminator#jobs#vim_on_error'),
@@ -53,6 +55,7 @@ function terminator#jobs#nvim_on_event(job_id, data, event) dict
         return
 
     else
+        let s:terminator_running_job_nvim = -2
         let run_time = split(reltimestr(reltime(s:start_time)))[0]
         let end_of_queue = self.stdout_queue[-1]
         if end_of_queue != ''
@@ -103,10 +106,19 @@ endfunction
 
 
 function terminator#jobs#stop_running_job()
+
     if s:has_nvim
-        call jobstop(g:terminator_running_job)
+        if s:terminator_running_job_nvim == -2
+            return
+        endif
+        echo 'stopping job ' . s:terminator_running_job_nvim
+        call jobstop(s:terminator_running_job_nvim)
     else
-        call job_stop(g:terminator_running_job)
+        if !exists('s:terminator_running_job_vim') || job_status(s:terminator_running_job_vim) != 'run'
+            return
+        endif
+        echo 'stopping job ' . s:terminator_running_job_vim
+        call job_stop(s:terminator_running_job_vim)
     endif
 endfunction
 
