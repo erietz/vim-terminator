@@ -4,7 +4,7 @@ endif
 let g:autoloaded_terminator_window = 1
 
 let s:has_nvim = has('nvim')
-let s:terminator_terminal_buffer_name_regex = '\(^term://\|\[Terminal\]\|\[running\]\|^!/bin/\)'
+let s:terminator_terminal_buffer_name_regex = '\(^term://\|\[Terminal\]\|'.'!'.&shell.'\|^!/bin/\)'
 
 if exists("g:terminator_split_location")
     let s:terminator_split_location = g:terminator_split_location
@@ -23,7 +23,7 @@ function terminator#window#output_buffer_new()
     let error_format = &errorformat
     execute printf('%s split OUTPUT_BUFFER', s:terminator_split_location)
     call terminator#window#resize_window()
-    setlocal filetype=output_buffer buftype=nofile noswapfile nowrap modifiable nospell nonumber norelativenumber winfixheight winfixwidth
+    setlocal filetype=output_buffer nobuflisted buftype=nofile noswapfile nowrap modifiable nospell nonumber norelativenumber winfixheight winfixwidth
     let &errorformat=error_format
     let buf_num = bufnr('%')
     return buf_num
@@ -59,11 +59,12 @@ function terminator#window#resize_window()
 endfunction
 
 function terminator#window#send_to_terminal(contents) abort
+    let warning_message = 'Your terminal is opening ... you may have to run this again if it opens too slowly'
     if !(exists("s:terminator_terminal_buffer_number")) 
-        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
+        echo warning_message
         call terminator#window#open_terminal()
     elseif bufname(s:terminator_terminal_buffer_number) !~# s:terminator_terminal_buffer_name_regex
-        echo "Your terminal is opening ... you may have to run this again if it opens too slowly"
+        echo warning_message
         call terminator#window#open_terminal()
     else
         if s:has_nvim
