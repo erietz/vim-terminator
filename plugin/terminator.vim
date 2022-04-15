@@ -11,7 +11,8 @@ command! TerminatorRunFileInTerminal call terminator#run_file("terminal", expand
 command! TerminatorRunFileInOutputBuffer call terminator#run_file("output_buffer", expand("%"))
 command! TerminatorStopRun call terminator#jobs#stop_running_job()
 command! -nargs=+ TerminatorRunAltCmd call terminator#jobs#run_file_in_output_buffer(<q-args>)
-command! TerminatorToggleOutputBuffer call terminator#window#output_buffer_toggle()
+command! TerminatorOutputBufferToggle call terminator#window#output_buffer_toggle()
+command! TerminatorOutputBufferClose call terminator#window#output_buffer_close()
 
 command! -range TerminatorSendSelectionToTerminal call terminator#window#send_to_terminal(terminator#util#get_visual_selection())
 command! TerminatorSendDelimiterToTerminal call terminator#util#send_delimiter_to_terminal()

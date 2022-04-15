@@ -107,7 +107,10 @@ function terminator#window#output_buffer_get_winnum()
 endfunction
 
 function terminator#window#output_buffer_close()
-    execute printf('%s close', terminator#window#output_buffer_get_winnum())
+    let win_num = terminator#window#output_buffer_get_winnum()
+    if win_num > -1
+        execute printf('%s close', win_num)
+    endif
 endfunction
 
 function terminator#window#output_buffer_toggle()
